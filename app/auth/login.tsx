@@ -3,22 +3,63 @@ import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/context/AuthContext';
+import { authApi } from '@/services/api/auth';
+import { apiClient } from '@/services/api/client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const router = useRouter();
+  const { signIn, isAuthenticated } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = async () => {
+    try {
+      const response = await authApi.login({ email, password });
+
+      if (!response.success || !response.data) {
+        setError(response.error?.message || 'Giriş yapılamadı');
+        return;
+      }
+
+      signIn({
+        user: response.data.user
+      });
+
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Bir hata oluştu');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.content}>
+        {error && (
+          <ThemedText style={styles.error}>{error}</ThemedText>
+        )}
+        
         <ThemedText style={styles.logo}>LOGO</ThemedText>
         
         <View style={styles.form}>
           <TextInput 
+            value={email}
+            onChangeText={setEmail}
             placeholder="E-posta"
             style={styles.input}
             placeholderTextColor="#999"
           />
           <TextInput 
+            value={password}
+            onChangeText={setPassword}
             placeholder="Şifre"
             style={styles.input}
             secureTextEntry
@@ -29,7 +70,10 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={() => signIn()}>
+        <TouchableOpacity 
+          style={styles.loginButton} 
+          onPress={handleLogin}
+        >
           <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
         </TouchableOpacity>
 
@@ -140,5 +184,10 @@ const styles = StyleSheet.create({
   link: {
     color: '#4285F4',
     fontWeight: '600',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 16,
   },
 }); 

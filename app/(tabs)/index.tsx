@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -8,11 +8,10 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 
 export default function HomeScreen() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, signOut, user } = useAuth();
 
-  if (!isAuthenticated) {
-    return <Redirect href="/auth/login" />;
-  }
+  console.log(user,'user');
+  console.log(isAuthenticated,'isAuthenticatedIndexxxx');
 
   return (
     <ParallaxScrollView
@@ -24,8 +23,10 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+        <ThemedText type="title">Hoş geldin, {user?.name}!</ThemedText>
+        <TouchableOpacity onPress={signOut}>
+          <ThemedText style={styles.logoutText}>Çıkış Yap</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
@@ -78,5 +79,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  logoutText: {
+    color: 'red',
+    marginLeft: 10,
   },
 });
