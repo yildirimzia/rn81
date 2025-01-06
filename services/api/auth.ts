@@ -31,10 +31,6 @@ export const authApi = {
         return apiClient.post<LoginResponse>('register', data);
     },
 
-    forgotPassword: async (email: string): Promise<ApiResponse<{ message: string }>> => {
-        return apiClient.post('/auth/forgot-password', { email });
-    },
-
     logout: async (): Promise<ApiResponse<{ success: boolean }>> => {
         return apiClient.post('logout');
     },
