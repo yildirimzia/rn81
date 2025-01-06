@@ -27,6 +27,14 @@ export default function AuthLayout() {
             header: () => null, // Header tamamen gizlenir
           }}
         />
+         <Stack.Screen
+        name="resetPassword"
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+          header: () => null, // Header tamamen gizlenir
+        }}
+      />
       </Stack>
     </View>
   );

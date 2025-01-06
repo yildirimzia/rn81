@@ -78,7 +78,9 @@ export default function LoginScreen() {
             onSubmitEditing={handleLogin}
           />
           <TouchableOpacity style={styles.forgotPassword}>
-            <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
+            <Link href="/auth/resetPassword">
+              <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
+            </Link>
           </TouchableOpacity>
         </View>
 
