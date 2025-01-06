@@ -2,7 +2,6 @@ import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert } fr
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { authApi } from '@/services/api/auth'; // API çağrıları için import
 import { useRouter } from 'expo-router';
 
