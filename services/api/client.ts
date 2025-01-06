@@ -1,7 +1,11 @@
 import { authApi } from './auth';
 import { ApiResponse, ApiError } from './types';
 
-const API_URL = 'http://192.168.1.100:8000';
+// IP adresi üzerinden HTTPS URL
+const API_URL = 'https://192.168.1.100:8000';
+
+// Production için
+// const API_URL = 'https://api.yourapp.com';
 
 type RequestConfig = {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -13,7 +17,6 @@ class ApiClient {
     private static instance: ApiClient;
     private token: string | null = null;
     private isRefreshing = false;
-    private failedQueue: any[] = [];
 
     private constructor() { }
 
@@ -35,63 +38,26 @@ class ApiClient {
         };
 
         if (this.token) {
-            console.log('Adding token to request headers:', this.token);
             headers['Authorization'] = `Bearer ${this.token}`;
-        } else {
-            console.log('No token available for request');
         }
 
-        Object.assign(headers, config.headers || {});
-
         try {
-            console.log('Request details:', {
-                url: `${API_URL}/api/v1/${endpoint}`,
-                method: config.method,
-                headers: headers,
-                body: config.body
-            });
-
             const response = await fetch(`${API_URL}/api/v1/${endpoint}`, {
                 ...config,
                 headers,
                 credentials: 'include',
+                mode: 'cors',
                 body: config.body ? JSON.stringify(config.body) : undefined,
             });
 
+            const cookies = response.headers.get('set-cookie');
+            console.log('Response cookies:', cookies);
+
             const data = await response.json();
-            console.log('Response details:', {
-                status: response.status,
-                data: data
-            });
 
-            if (response.status === 401 && !this.isRefreshing) {
-                this.isRefreshing = true;
-
-                try {
-                    const refreshResponse = await authApi.refreshToken();
-
-                    if (refreshResponse.success && refreshResponse.data) {
-                        this.token = refreshResponse.data.accessToken;
-
-                        return this.request<T>(endpoint, config);
-                    }
-                } catch (error) {
-                    console.error('Token refresh failed:', error);
-                    this.token = null;
-                    throw new Error('Authentication failed');
-                } finally {
-                    this.isRefreshing = false;
-                }
-            }
-
-            if (!response.ok) {
-                return {
-                    success: false,
-                    error: {
-                        message: data.message || 'Bir hata oluştu',
-                        statusCode: response.status
-                    }
-                };
+            if (endpoint === 'login' && data.success && data.accessToken) {
+                this.token = data.accessToken;
+                console.log('Token saved:', this.token);
             }
 
             return {

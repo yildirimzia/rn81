@@ -47,17 +47,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      // Önce API çağrısını yap
-      await authApi.logout();
+        const response = await authApi.logout();
+        
+        if (response.success) {
+            // Önce local state'i temizle
+            apiClient.setToken(null);
+            updateState({
+                user: null,
+                isAuthenticated: false
+            });
+        } else {
+            console.error('Logout failed:', response.error);
+        }
     } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Her durumda state'i temizle
-      apiClient.setToken(null);
-      updateState({
-        user: null,
-        isAuthenticated: false
-      });
+        console.error('Logout error:', error);
+        // Hata durumunda da state'i temizle
+        apiClient.setToken(null);
+        updateState({
+            user: null,
+            isAuthenticated: false
+        });
     }
   }, [updateState]);
 
