@@ -2,7 +2,7 @@ import { authApi } from './auth';
 import { ApiResponse, ApiError } from './types';
 
 // IP adresi üzerinden HTTPS URL
-const API_URL = 'https://192.168.1.100:8000';
+const API_URL = 'http://localhost:8000';
 
 // Production için
 // const API_URL = 'https://api.yourapp.com';
