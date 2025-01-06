@@ -1,26 +1,42 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert, Linking } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState, useEffect } from 'react';
-import { authApi } from '@/services/api/auth'; // API çağrıları için import
 import { useRouter } from 'expo-router';
-import ResetPasswordForm from './resetPasswordForm';
+import { authApi } from '@/services/api/auth'; // API çağrıları için import
+import { useSearchParams } from 'expo-router/build/hooks';
+// Define the props interface
+interface ResetPasswordFormProps {
+    token: string; // Define the token prop type
+}
 
-export default function ResetPasswordScreen() {
+export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [token, setToken] = useState<string | null>(null); // Token'ı saklamak için state
+    const searchParams = useSearchParams();
+    const s_token = searchParams.get('s_token')!;
+    const uuid = searchParams.get('uuid')!;
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    useEffect(() => {
+        if (!s_token || !uuid) {
+            // Parametreler eksikse hata mesajı göster
+            Alert.alert('Hata', 'Geçersiz bağlantı.');
+        }
+    }, [s_token, uuid]);
 
     const handleResetPassword = async () => {
+        if (newPassword !== confirmPassword) {
+            Alert.alert('Hata', 'Şifreler eşleşmiyor. Lütfen şifrelerinizi kontrol edin.');
+            return;
+        }
+
         try {
-            const response = await authApi.requestPasswordReset({ email });
+            const response = await authApi.resetPassword({ token: s_token, newPassword });
 
             if (response.success) {
-                Alert.alert('Başarılı', response.data?.message);
-                // Token'ı URL'den al
-                const urlParams = new URLSearchParams(window.location.search);
-                const tokenFromUrl = urlParams.get('token');
-                setToken(tokenFromUrl); // Token'ı state'e kaydet
+                Alert.alert('Başarılı', 'Şifreniz başarıyla sıfırlandı.');
+                router.push('/auth/login'); // Başarı sayfasına yönlendir
             } else {
                 Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
             }
@@ -29,35 +45,32 @@ export default function ResetPasswordScreen() {
         }
     };
 
-    // Eğer token varsa, ResetPasswordForm'u göster
-    if (token) {
-        return <ResetPasswordForm token={token} />;
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <ThemedView style={styles.content}>
                 <ThemedText style={styles.title}>Şifrenizi Sıfırlayın</ThemedText>
-                <ThemedText style={styles.subtitle}>Şifrenizi sıfırlamak için lütfen e-posta adresinizi girin.</ThemedText>
                 <View style={styles.form}>
                     <TextInput 
-                        value={email}
-                        onChangeText={setEmail}
-                        placeholder="E-posta"
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                        placeholder="Yeni Şifre"
                         style={styles.input}
+                        secureTextEntry
                         placeholderTextColor="#999"
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                        returnKeyType="done"
+                    />
+                    <TextInput 
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder="Şifreyi Doğrula"
+                        style={styles.input}
+                        secureTextEntry
+                        placeholderTextColor="#999"
                     />
                     <TouchableOpacity 
                         style={styles.resetButton} 
                         onPress={handleResetPassword}
                     >
                         <ThemedText style={styles.buttonText}>Şifreyi Sıfırla</ThemedText>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
-                        <ThemedText style={styles.cancelText}>Vazgeç</ThemedText>
                     </TouchableOpacity>
                 </View>
             </ThemedView>
@@ -78,11 +91,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 15,
         textAlign: 'center',
         marginBottom: 20,
     },
@@ -106,13 +114,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '600',
-    },
-    cancelButton: {
-        marginTop: 12,
-        alignItems: 'center',
-    },
-    cancelText: {
-        color: '#4285F4',
-        fontSize: 14,
     },
 });

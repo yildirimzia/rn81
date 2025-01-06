@@ -42,4 +42,8 @@ export const authApi = {
     requestPasswordReset: async (data: { email: string }): Promise<ApiResponse<PasswordResetResponse>> => {
         return apiClient.post<PasswordResetResponse>('request-password-reset', data);
     },
+
+    resetPassword: async (data: { token: string; newPassword: string }): Promise<ApiResponse<{ success: boolean }>> => {
+        return apiClient.post<{ success: boolean }>(`reset-password`, data);
+    },
 }; 
