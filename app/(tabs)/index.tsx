@@ -10,6 +10,10 @@ import { Redirect } from 'expo-router';
 export default function HomeScreen() {
   const { isAuthenticated, signOut, user } = useAuth();
 
+  if (!isAuthenticated) {
+    return <Redirect href="/auth/login" />;
+  }
+
   console.log(user,'user');
   console.log(isAuthenticated,'isAuthenticatedIndexxxx');
 

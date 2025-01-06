@@ -34,4 +34,12 @@ export const authApi = {
     forgotPassword: async (email: string): Promise<ApiResponse<{ message: string }>> => {
         return apiClient.post('/auth/forgot-password', { email });
     },
+
+    logout: async (): Promise<ApiResponse<{ success: boolean }>> => {
+        return apiClient.post('logout');
+    },
+
+    refreshToken: async (): Promise<ApiResponse<{ accessToken: string }>> => {
+        return apiClient.get('refresh');
+    },
 }; 

@@ -1,3 +1,4 @@
+import { authApi } from './auth';
 import { ApiResponse, ApiError } from './types';
 
 const API_URL = 'http://192.168.1.100:8000';
@@ -11,6 +12,8 @@ type RequestConfig = {
 class ApiClient {
     private static instance: ApiClient;
     private token: string | null = null;
+    private isRefreshing = false;
+    private failedQueue: any[] = [];
 
     private constructor() { }
 
@@ -21,17 +24,33 @@ class ApiClient {
         return ApiClient.instance;
     }
 
-    setToken(token: string) {
+    setToken(token: string | null) {
+        console.log('Token being set in ApiClient:', token);
         this.token = token;
     }
 
     private async request<T>(endpoint: string, config: RequestConfig): Promise<ApiResponse<T>> {
-        const headers = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            ...(config.headers || {}),
-        } as Record<string, string>;
+        };
+
+        if (this.token) {
+            console.log('Adding token to request headers:', this.token);
+            headers['Authorization'] = `Bearer ${this.token}`;
+        } else {
+            console.log('No token available for request');
+        }
+
+        Object.assign(headers, config.headers || {});
 
         try {
+            console.log('Request details:', {
+                url: `${API_URL}/api/v1/${endpoint}`,
+                method: config.method,
+                headers: headers,
+                body: config.body
+            });
+
             const response = await fetch(`${API_URL}/api/v1/${endpoint}`, {
                 ...config,
                 headers,
@@ -40,6 +59,30 @@ class ApiClient {
             });
 
             const data = await response.json();
+            console.log('Response details:', {
+                status: response.status,
+                data: data
+            });
+
+            if (response.status === 401 && !this.isRefreshing) {
+                this.isRefreshing = true;
+
+                try {
+                    const refreshResponse = await authApi.refreshToken();
+
+                    if (refreshResponse.success && refreshResponse.data) {
+                        this.token = refreshResponse.data.accessToken;
+
+                        return this.request<T>(endpoint, config);
+                    }
+                } catch (error) {
+                    console.error('Token refresh failed:', error);
+                    this.token = null;
+                    throw new Error('Authentication failed');
+                } finally {
+                    this.isRefreshing = false;
+                }
+            }
 
             if (!response.ok) {
                 return {
@@ -56,6 +99,7 @@ class ApiClient {
                 data: data as T
             };
         } catch (error: any) {
+            console.error('Request error:', error);
             return {
                 success: false,
                 error: {

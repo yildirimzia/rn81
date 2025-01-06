@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { authApi } from '../services/api/auth';
+import { apiClient } from '../services/api/client';
 
 type User = {
   _id: string;
@@ -11,42 +13,70 @@ type User = {
 type AuthContextType = {
   isAuthenticated: boolean;
   user: User | null;
-  signIn: (data: { user: User }) => void;
+  signIn: (data: { user: User; accessToken: string }) => void;
   signOut: () => void;
+  isInitialized: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [state, setState] = useState({
+    isAuthenticated: false,
+    user: null as User | null,
+    isInitialized: false
+  });
 
-  // Debug için state değişimlerini izleyelim
+  // State güncellemelerini tek bir fonksiyonda yapalım
+  const updateState = useCallback((updates: Partial<typeof state>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const signIn = useCallback(async (data: { user: User; accessToken: string }) => {
+    try {
+        // Sadece ApiClient'ta tut ve state'i güncelle
+        apiClient.setToken(data.accessToken);
+        updateState({
+            user: data.user,
+            isAuthenticated: true
+        });
+    } catch (error) {
+        console.error('SignIn error:', error);
+    }
+  }, [updateState]);
+
+  const signOut = useCallback(async () => {
+    try {
+      // Önce API çağrısını yap
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Her durumda state'i temizle
+      apiClient.setToken(null);
+      updateState({
+        user: null,
+        isAuthenticated: false
+      });
+    }
+  }, [updateState]);
+
   useEffect(() => {
-    console.log('AuthContext - isAuthenticated değişti:', isAuthenticated);
-    console.log('AuthContext - user değişti:', user);
-  }, [isAuthenticated, user]);
+    // İlk yükleme kontrolü
+    updateState({ isInitialized: true });
+  }, [updateState]);
 
-  const signIn = (data: { user: User }) => {
-    console.log('SignIn fonksiyonu çağrıldı, gelen data:', data);
-    setUser(data.user);
-    setIsAuthenticated(true);
-  };
-
-  const signOut = () => {
-    console.log('SignOut fonksiyonu çağrıldı');
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  const value = {
-    isAuthenticated,
-    user,
+  const value = useMemo(() => ({
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
     signIn,
-    signOut
-  };
+    signOut,
+    isInitialized: state.isInitialized
+  }), [state.isAuthenticated, state.user, state.isInitialized, signIn, signOut]);
 
-  console.log('AuthProvider render - current state:', value);
+  if (!state.isInitialized) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={value}>

@@ -1,11 +1,11 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api/auth';
 import { apiClient } from '@/services/api/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const passwordInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -31,7 +32,8 @@ export default function LoginScreen() {
       }
 
       signIn({
-        user: response.data.user
+        user: response.data.user,
+        accessToken: response.data.accessToken
       });
 
     } catch (error) {
@@ -56,14 +58,24 @@ export default function LoginScreen() {
             placeholder="E-posta"
             style={styles.input}
             placeholderTextColor="#999"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoCorrect={false}
+            returnKeyType="next"
+            enablesReturnKeyAutomatically
+            onSubmitEditing={() => passwordInputRef.current?.focus()}
           />
           <TextInput 
+            ref={passwordInputRef}
             value={password}
             onChangeText={setPassword}
             placeholder="Şifre"
             style={styles.input}
             secureTextEntry
             placeholderTextColor="#999"
+            returnKeyType="done"
+            enablesReturnKeyAutomatically
+            onSubmitEditing={handleLogin}
           />
           <TouchableOpacity style={styles.forgotPassword}>
             <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
