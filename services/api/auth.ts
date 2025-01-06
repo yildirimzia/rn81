@@ -1,4 +1,4 @@
-import { ApiResponse } from './types';
+import { ApiResponse, PasswordResetResponse } from './types';
 import { apiClient } from './client';
 
 type User = {
@@ -37,5 +37,9 @@ export const authApi = {
 
     refreshToken: async (): Promise<ApiResponse<{ accessToken: string }>> => {
         return apiClient.get('refresh');
+    },
+
+    requestPasswordReset: async (data: { email: string }): Promise<ApiResponse<PasswordResetResponse>> => {
+        return apiClient.post<PasswordResetResponse>('request-password-reset', data);
     },
 }; 

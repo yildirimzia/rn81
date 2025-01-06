@@ -3,14 +3,26 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { authApi } from '@/services/api/auth'; // API çağrıları için import
+import { useRouter } from 'expo-router';
 
 export default function ResetPasswordScreen() {
-    const navigation = useNavigation();
+    const router = useRouter();
     const [email, setEmail] = useState('');
 
     const handleResetPassword = async () => {
-        // Şifre sıfırlama işlemi burada yapılacak
-        Alert.alert('E-posta gönderildi', 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+        try {
+            const response = await authApi.requestPasswordReset({ email });
+
+            if (response.success) {
+                Alert.alert('Başarılı', response.data?.message);
+                router.back()
+            } else {
+                Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
+            }
+        } catch (error) {
+            Alert.alert('Hata', 'Bir hata oluştu. Lütfen tekrar deneyin.');
+        }
     };
 
     return (
@@ -35,7 +47,7 @@ export default function ResetPasswordScreen() {
                     >
                         <ThemedText style={styles.buttonText}>Şifreyi Sıfırla</ThemedText>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.cancelButton}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
                         <ThemedText style={styles.cancelText}>Vazgeç</ThemedText>
                     </TouchableOpacity>
                 </View>
