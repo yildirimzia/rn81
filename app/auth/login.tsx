@@ -41,6 +41,7 @@ export default function LoginScreen() {
       setError('Bir hata oluştu');
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>
