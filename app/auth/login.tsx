@@ -7,19 +7,32 @@ import { authApi } from '@/services/api/auth';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 
+
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated, successMessage, setSuccessMessage } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const passwordInputRef = useRef<TextInput>(null);
+
+  console.log(successMessage, 'successMessage1111');
+
 
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/(tabs)');
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, setSuccessMessage]);
 
   const handleLogin = async () => {
 
@@ -54,6 +67,7 @@ export default function LoginScreen() {
       <ThemedView style={styles.content}>        
         <ThemedText style={styles.logo}>LOGO</ThemedText>
         
+
         <View style={styles.form}>
           <TextInput 
             value={email}
@@ -84,6 +98,11 @@ export default function LoginScreen() {
           {error && (
             <ThemedText style={styles.error}>{error}</ThemedText>
           )}
+
+          {successMessage && (
+          <ThemedText style={styles.successMessage}>{successMessage}</ThemedText>
+          )}
+        
           <TouchableOpacity style={styles.forgotPassword}>
             <Link href="/auth/resetPassword">
               <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
@@ -214,5 +233,11 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'left',
     marginBottom: 16,
+  },
+  successMessage: {
+    color: 'green',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontSize: 16,
   },
 }); 

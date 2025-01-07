@@ -10,22 +10,45 @@ export default function ResetPasswordScreen() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [token, setToken] = useState<string | null>(null); // Token'ı saklamak için state
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    
 
     const handleResetPassword = async () => {
+
+        if(!email) {
+            setError('E-posta adresinizi giriniz');
+            setSuccess(null);
+
+            return;
+        }
+
+        setLoading(true);
         try {
             const response = await authApi.requestPasswordReset({ email });
 
-            if (response.success) {
-                Alert.alert('Başarılı', response.data?.message);
+            console.log(response, 'response dasdasdasdasd');
+
+
+            if (response.data?.success) {
+                setSuccess(response.data?.message);
                 // Token'ı URL'den al
+                setError(null);
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const tokenFromUrl = urlParams.get('token');
                 setToken(tokenFromUrl); // Token'ı state'e kaydet
+                
             } else {
-                Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
+                setError(response.data?.message || 'Bir hata oluştu');
+                setSuccess(null);
             }
         } catch (error) {
-            Alert.alert('Hata', 'Bir hata oluştu. Lütfen tekrar deneyin.');
+            setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -50,11 +73,17 @@ export default function ResetPasswordScreen() {
                         keyboardType="email-address"
                         returnKeyType="done"
                     />
+
+                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+                    {success && <ThemedText style={styles.success}>{success}</ThemedText>}
                     <TouchableOpacity 
-                        style={styles.resetButton} 
+                        style={[styles.resetButton, loading && styles.disabledButton]} 
                         onPress={handleResetPassword}
+                        disabled={loading}
                     >
-                        <ThemedText style={styles.buttonText}>Şifreyi Sıfırla</ThemedText>
+                        <ThemedText style={styles.buttonText}>
+                            {loading ? 'Gönderiliyor...' : 'Şifreyi Sıfırla'}
+                        </ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
                         <ThemedText style={styles.cancelText}>Vazgeç</ThemedText>
@@ -114,5 +143,19 @@ const styles = StyleSheet.create({
     cancelText: {
         color: '#4285F4',
         fontSize: 14,
+    },
+    error: {
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 10,
+    },
+    disabledButton: {
+        backgroundColor: '#A0A0A0',
+        opacity: 0.7,
+    },
+    success: {
+        color: 'green',
+        textAlign: 'center',
+        marginTop: 10,
     },
 });

@@ -5,24 +5,38 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { authApi } from '@/services/api/auth'; // API çağrıları için import
 import { useSearchParams } from 'expo-router/build/hooks';
+import { useAuth } from '@/context/AuthContext';
 
-export default function ResetPasswordForm() {
+interface ResetPasswordFormProps {
+    token: string;
+}
+
+export default function ResetPasswordForm({ token: propToken }: ResetPasswordFormProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const token = searchParams.get('token') || ''; // Fallback to an empty string
+    const token = searchParams.get('token') || propToken || ''; // Use prop token as fallback
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const { setSuccessMessage } = useAuth();
+
 
     useEffect(() => {
         if (!token) {
-            Alert.alert('Hata', 'Geçersiz bağlantı.');
+            setError('Geçersiz bağlantı.');
         }
     }, [token]);
 
     const handleResetPassword = async () => {
+
+
+        if (!newPassword || !confirmPassword) {
+            setError('Lütfen tüm alanları doldurun.');
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
-            Alert.alert('Hata', 'Şifreler eşleşmiyor. Lütfen şifrelerinizi kontrol edin.');
+            setError('Şifreler eşleşmiyor. Lütfen şifrelerinizi kontrol edin.');
             return;
         }
 
@@ -30,13 +44,12 @@ export default function ResetPasswordForm() {
             const response = await authApi.resetPassword({ token, newPassword });
 
             if (response.success) {
-                Alert.alert('Başarılı', 'Şifreniz başarıyla sıfırlandı.');
-                router.push('/auth/login'); // Başarı sayfasına yönlendir
+                setSuccessMessage('Şifreniz başarıyla sıfırlandı');
+                router.replace('/auth/login');
             } else {
                 setError(response.error?.message || 'Şifre sıfırlama başarısız oldu');
             }
         } catch (error) {
-            console.error('Şifre sıfırlama hatası:', error);
             setError('Bir hata oluştu. Lütfen tekrar deneyin.');
         }
     };

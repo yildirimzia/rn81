@@ -16,6 +16,8 @@ type AuthContextType = {
   signIn: (data: { user: User; accessToken: string }) => void;
   signOut: () => void;
   isInitialized: boolean;
+  successMessage: string | null;
+  setSuccessMessage: (message: string | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -24,7 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState({
     isAuthenticated: false,
     user: null as User | null,
-    isInitialized: false
+    isInitialized: false,
+    successMessage: null as string | null
   });
 
   // State güncellemelerini tek bir fonksiyonda yapalım
@@ -70,6 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [updateState]);
 
+  const setSuccessMessage = useCallback((message: string | null) => {
+    updateState({ successMessage: message });
+  }, [updateState]);
+
   useEffect(() => {
     // İlk yükleme kontrolü
     updateState({ isInitialized: true });
@@ -80,8 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user: state.user,
     signIn,
     signOut,
-    isInitialized: state.isInitialized
-  }), [state.isAuthenticated, state.user, state.isInitialized, signIn, signOut]);
+    isInitialized: state.isInitialized,
+    successMessage: state.successMessage,
+    setSuccessMessage
+  }), [state.isAuthenticated, state.user, state.isInitialized, state.successMessage, signIn, signOut, setSuccessMessage]);
 
   if (!state.isInitialized) {
     return null;
