@@ -24,6 +24,15 @@ type LoginRequest = {
     password: string;
 };
 
+interface ResetPasswordResponse {
+    success: boolean;
+    message: string;
+    data?: {
+        success: boolean;
+        message: string;
+    };
+}
+
 export const authApi = {
     login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
         return apiClient.post<LoginResponse>('login', credentials);
@@ -45,7 +54,7 @@ export const authApi = {
         return apiClient.post<PasswordResetResponse>('request-password-reset', data);
     },
 
-    resetPassword: async (data: { token: string; newPassword: string }): Promise<ApiResponse<{ success: boolean }>> => {
-        return apiClient.post<{ success: boolean }>(`reset-password`, data);
+    resetPassword: async (data: { token: string; newPassword: string }): Promise<ResetPasswordResponse> => {
+        return apiClient.post('/reset-password', data);
     },
 }; 

@@ -43,11 +43,11 @@ export default function ResetPasswordForm({ token: propToken }: ResetPasswordFor
         try {
             const response = await authApi.resetPassword({ token, newPassword });
 
-            if (response.success) {
+            if (response.data?.success) {
                 setSuccessMessage('Şifreniz başarıyla sıfırlandı');
                 router.replace('/auth/login');
             } else {
-                setError(response.error?.message || 'Şifre sıfırlama başarısız oldu');
+                setError(response.data?.message || 'Şifre sıfırlama başarısız oldu');
             }
         } catch (error) {
             setError('Bir hata oluştu. Lütfen tekrar deneyin.');
@@ -80,6 +80,10 @@ export default function ResetPasswordForm({ token: propToken }: ResetPasswordFor
                         onPress={handleResetPassword}
                     >
                         <ThemedText style={styles.buttonText}>Şifreyi Sıfırla</ThemedText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/auth/login')}>
+                        <ThemedText style={styles.cancelButton}>Vazgeç</ThemedText>
                     </TouchableOpacity>
                     {error && <ThemedText style={styles.error}>{error}</ThemedText>}
                 </View>
@@ -130,4 +134,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
     },
+    cancelButton: {
+        color: '#4285F4',
+        textAlign: 'center',
+        marginTop: 10,
+    },
 });
+
