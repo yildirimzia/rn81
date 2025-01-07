@@ -13,17 +13,52 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Hata state'leri
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const handleRegister = async () => {
-    if (!email || !email.includes('@')) {
-      Alert.alert('Hata', 'Geçerli bir e-posta adresi giriniz');
-      return;
+    // Hata state'lerini temizle
+    setNameError('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+
+    let hasError = false;
+
+    if (!name.trim()) {
+      setNameError('Ad Soyad alanı boş bırakılamaz');
+      hasError = true;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Hata', 'Şifreler eşleşmiyor');
-      return;
+    if (!email) {
+      setEmailError('E-posta alanı boş bırakılamaz');
+      hasError = true;
+    } else if (!email.includes('@')) {
+      setEmailError('Geçerli bir e-posta adresi giriniz');
+      hasError = true;
     }
+
+    if (!password) {
+      setPasswordError('Şifre alanı boş bırakılamaz');
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError('Şifre en az 6 karakter olmalıdır');
+      hasError = true;
+    }
+
+    if (!confirmPassword) {
+      setConfirmPasswordError('Şifre tekrar alanı boş bırakılamaz');
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError('Şifreler eşleşmiyor');
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     try {
       setLoading(true);
@@ -32,20 +67,27 @@ export default function RegisterScreen() {
         email: email.trim().toLowerCase(),
         password 
       });
-      
+
+      console.log('Register response:', response);
+
       if (response?.data?.success) {
         router.push({
-          pathname: "/(auth)/verify-email" as const,
+          pathname: "/auth/verify-email" as const,
           params: { 
             activationToken: response.data.activationToken,
-            email 
+            email,
+            password
           }
         });
+      } else {
+        // Başarısız response için email hatasını göster
+        setEmailError(response?.data?.message || 'Kayıt işlemi başarısız');
       }
     } catch (error: any) {
+      // Sadece network vb. hatalar için
       Alert.alert(
         'Hata',
-        error.response?.data?.message || 'Kayıt işlemi başarısız'
+        'Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.'
       );
     } finally {
       setLoading(false);
@@ -68,38 +110,65 @@ export default function RegisterScreen() {
         </ThemedText>
 
         <View style={styles.form}>
-          <TextInput 
-            placeholder="Ad Soyad"
-            style={styles.input}
-            placeholderTextColor="#999"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput 
-            placeholder="E-posta"
-            style={styles.input}
-            placeholderTextColor="#999"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-          <TextInput 
-            placeholder="Şifre"
-            style={styles.input}
-            secureTextEntry
-            placeholderTextColor="#999"
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TextInput 
-            placeholder="Şifre Tekrar"
-            style={styles.input}
-            secureTextEntry
-            placeholderTextColor="#999"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
+          <View>
+            <TextInput 
+              placeholder="Ad Soyad"
+              style={[styles.input, nameError && styles.inputError]}
+              placeholderTextColor="#999"
+              value={name}
+              onChangeText={(text) => {
+                setName(text);
+                setNameError('');
+              }}
+            />
+            {nameError ? <ThemedText style={styles.errorText}>{nameError}</ThemedText> : null}
+          </View>
+
+          <View>
+            <TextInput 
+              placeholder="E-posta"
+              style={[styles.input, emailError && styles.inputError]}
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setEmailError('');
+              }}
+              autoCapitalize="none"
+            />
+            {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
+          </View>
+
+          <View>
+            <TextInput 
+              placeholder="Şifre"
+              style={[styles.input, passwordError && styles.inputError]}
+              secureTextEntry
+              placeholderTextColor="#999"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                setPasswordError('');
+              }}
+            />
+            {passwordError ? <ThemedText style={styles.errorText}>{passwordError}</ThemedText> : null}
+          </View>
+
+          <View>
+            <TextInput 
+              placeholder="Şifre Tekrar"
+              style={[styles.input, confirmPasswordError && styles.inputError]}
+              secureTextEntry
+              placeholderTextColor="#999"
+              value={confirmPassword}
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                setConfirmPasswordError('');
+              }}
+            />
+            {confirmPasswordError ? <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText> : null}
+          </View>
 
           <TouchableOpacity 
             style={[styles.registerButton, loading && styles.disabledButton]} 
@@ -196,5 +265,15 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.7
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+    borderWidth: 1,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   }
 }); 

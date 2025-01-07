@@ -5,11 +5,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import { authApi } from '@/services/api/auth';
+import { useAuth } from '@/context/AuthContext';
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const [error, setError] = useState('');
   const { activationToken, email } = params;
+  const { signIn } = useAuth();
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,17 +30,22 @@ export default function VerifyEmailScreen() {
         code
       });
 
+      console.log(response, 'response');
+
       if (response?.data?.success) {
-        Alert.alert(
-          'Başarılı',
-          'Hesabınız başarıyla aktifleştirildi',
-          [
-            {
-              text: 'Tamam',
-              onPress: () => router.push("/(auth)/login" as const)
-            }
-          ]
-        );
+        const loginResponse = await authApi.login({
+          email: email as string,
+          password: params.password as string
+        });
+
+        if (loginResponse?.data?.success) {
+          await signIn({
+            user: loginResponse.data.user,
+            accessToken: loginResponse.data.accessToken
+          });
+        }
+      }else{
+        setError(response?.data?.message || 'Doğrulama başarısız');
       }
     } catch (error: any) {
       Alert.alert(
@@ -74,7 +82,7 @@ export default function VerifyEmailScreen() {
             keyboardType="number-pad"
             maxLength={4}
           />
-
+          {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
           <TouchableOpacity 
             style={[styles.verifyButton, loading && styles.disabledButton]} 
             onPress={handleVerification}
@@ -141,5 +149,12 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.7
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+    textAlign: 'center',
   }
 }); 
