@@ -9,10 +9,12 @@ type User = {
     isVerified: boolean;
     createdAt: string;
     updatedAt: string;
+    password: string;
 };
 
 type LoginResponse = {
     success: boolean;
+    message: string;
     user: User;
     accessToken: string;
 };

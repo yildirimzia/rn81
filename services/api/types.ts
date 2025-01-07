@@ -13,4 +13,4 @@ export type ApiResponse<T> = {
 export type PasswordResetResponse = {
     success: boolean;
     message: string;
-}; 
+};

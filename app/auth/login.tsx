@@ -20,20 +20,27 @@ export default function LoginScreen() {
     if (isAuthenticated) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated]);
+  }, []);
 
   const handleLogin = async () => {
+
+    if (!email || !password) {
+      setError('Lütfen e-posta adresinizi ve şifrenizi giriniz');
+      return;
+    }
+
     try {
       const response = await authApi.login({ email, password });
 
-      if (!response.success || !response.data) {
-        setError(response.error?.message || 'Giriş yapılamadı');
+      if (!response.data?.success || !response.success) {
+        console.log('response.data?.message', response.data?.message);
+        setError(response.data?.message || 'Giriş yapılamadı');
         return;
       }
 
       signIn({
         user: response.data.user,
-        accessToken: response.data.accessToken
+        accessToken: response.data.accessToken,
       });
 
     } catch (error) {
@@ -45,11 +52,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        {error && (
-          <ThemedText style={styles.error}>{error}</ThemedText>
-        )}
-        
+      <ThemedView style={styles.content}>        
         <ThemedText style={styles.logo}>LOGO</ThemedText>
         
         <View style={styles.form}>
@@ -78,11 +81,16 @@ export default function LoginScreen() {
             enablesReturnKeyAutomatically
             onSubmitEditing={handleLogin}
           />
+
+          {error && (
+            <ThemedText style={styles.error}>{error}</ThemedText>
+          )}
           <TouchableOpacity style={styles.forgotPassword}>
             <Link href="/auth/resetPassword">
               <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
             </Link>
           </TouchableOpacity>
+
         </View>
 
         <TouchableOpacity 
@@ -202,7 +210,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 16,
   },
 }); 
