@@ -1,13 +1,56 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { authApi } from '@/services/api/auth';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!email || !email.includes('@')) {
+      Alert.alert('Hata', 'Geçerli bir e-posta adresi giriniz');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Hata', 'Şifreler eşleşmiyor');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authApi.register({ 
+        name, 
+        email: email.trim().toLowerCase(),
+        password 
+      });
+      
+      if (response?.data?.success) {
+        router.push({
+          pathname: "/(auth)/verify-email" as const,
+          params: { 
+            activationToken: response.data.activationToken,
+            email 
+          }
+        });
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'Hata',
+        error.response?.data?.message || 'Kayıt işlemi başarısız'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,32 +72,42 @@ export default function RegisterScreen() {
             placeholder="Ad Soyad"
             style={styles.input}
             placeholderTextColor="#999"
+            value={name}
+            onChangeText={setName}
           />
           <TextInput 
             placeholder="E-posta"
             style={styles.input}
             placeholderTextColor="#999"
             keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
           />
           <TextInput 
             placeholder="Şifre"
             style={styles.input}
             secureTextEntry
             placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
           />
           <TextInput 
             placeholder="Şifre Tekrar"
             style={styles.input}
             secureTextEntry
             placeholderTextColor="#999"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
           />
 
           <TouchableOpacity 
-            style={styles.registerButton} 
-            onPress={() => signIn()}
+            style={[styles.registerButton, loading && styles.disabledButton]} 
+            onPress={handleRegister}
+            disabled={loading}
           >
             <ThemedText style={styles.buttonText}>
-              Kayıt Ol
+              {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -66,13 +119,6 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.googleButton}>
-          <Image 
-            source={require('@/assets/images/google-icon.png')} 
-            style={styles.googleIcon} 
-          />
-          <ThemedText>Google ile devam et</ThemedText>
-        </TouchableOpacity>
       </ThemedView>
     </SafeAreaView>
   );
@@ -148,4 +194,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  disabledButton: {
+    opacity: 0.7
+  }
 }); 

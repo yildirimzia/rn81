@@ -40,13 +40,34 @@ interface GoogleLoginRequest {
     platform: 'web' | 'android' | 'ios';
 }
 
+interface RegistrationResponse {
+    success: boolean;
+    message: string;
+    activationToken: string;
+}
+
+interface VerifyEmailResponse {
+    success: boolean;
+    message: string;
+    user?: User;
+}
+
 export const authApi = {
     login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
         return apiClient.post<LoginResponse>('login', credentials);
     },
 
-    register: async (data: { name: string; email: string; password: string }): Promise<ApiResponse<LoginResponse>> => {
-        return apiClient.post<LoginResponse>('register', data);
+    register: async (data: { name: string; email: string; password: string }): Promise<ApiResponse<RegistrationResponse>> => {
+        try {
+            const response = await apiClient.post<RegistrationResponse>('registration', {
+                name: data.name,
+                email: data.email.trim().toLowerCase(),
+                password: data.password
+            });
+            return response;
+        } catch (error) {
+            throw error;
+        }
     },
 
     logout: async (): Promise<ApiResponse<{ success: boolean }>> => {
@@ -75,5 +96,12 @@ export const authApi = {
             console.error('Google login error:', error);
             throw error;
         }
+    },
+
+    verifyEmail: async (data: { activationToken: string; code: string }): Promise<ApiResponse<VerifyEmailResponse>> => {
+        return apiClient.post<VerifyEmailResponse>('activate-user', {
+            activation_token: data.activationToken,
+            activation_code: data.code
+        });
     }
 }; 
