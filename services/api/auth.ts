@@ -33,6 +33,13 @@ interface ResetPasswordResponse {
     };
 }
 
+interface GoogleLoginRequest {
+    email: string;
+    name: string;
+    picture?: string;
+    platform: 'web' | 'android' | 'ios';
+}
+
 export const authApi = {
     login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
         return apiClient.post<LoginResponse>('login', credentials);
@@ -57,4 +64,16 @@ export const authApi = {
     resetPassword: async (data: { token: string; newPassword: string }): Promise<ApiResponse<ResetPasswordResponse>> => {
         return apiClient.post<ResetPasswordResponse>('reset-password', data);
     },
+
+    googleLogin: async (data: GoogleLoginRequest): Promise<ApiResponse<LoginResponse>> => {
+        console.log('Sending Google login request:', data);
+        try {
+            const response = await apiClient.post<LoginResponse>('google-login', data);
+            console.log('Google login response:', response);
+            return response;
+        } catch (error) {
+            console.error('Google login error:', error);
+            throw error;
+        }
+    }
 }; 

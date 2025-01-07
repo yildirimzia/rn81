@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -6,7 +6,10 @@ import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api/auth';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,6 +18,12 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const passwordInputRef = useRef<TextInput>(null);
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
 
   console.log(successMessage, 'successMessage1111');
 
@@ -33,6 +42,23 @@ export default function LoginScreen() {
       return () => clearTimeout(timer);
     }
   }, [successMessage, setSuccessMessage]);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      console.log('Full Google response:', response);
+      
+      const accessToken = response.params.access_token;
+      if (accessToken) {
+        handleGoogleLogin(accessToken);
+      } else {
+        console.log('No access token found in:', response.params);
+        setError('Google girişi başarısız oldu: Token alınamadı');
+      }
+    } else if (response?.type === 'error') {
+      console.log('Google OAuth Error:', response.error);
+      setError('Google girişi başarısız oldu: ' + response.error?.message);
+    }
+  }, [response]);
 
   const handleLogin = async () => {
 
@@ -58,6 +84,46 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Login error:', error);
       setError('Bir hata oluştu');
+    }
+  };
+
+  const handleGoogleLogin = async (accessToken: string) => {
+    try {
+      console.log('Fetching user info with token:', accessToken);
+      
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to fetch user info: ' + userInfoResponse.statusText);
+      }
+      
+      const userData = await userInfoResponse.json();
+      console.log('Google user data:', userData);
+
+      const platform = Platform.select({
+        ios: 'ios',
+        android: 'android',
+        default: 'web'
+      }) as 'web' | 'android' | 'ios';
+
+      const response = await authApi.googleLogin({
+        email: userData.email,
+        name: userData.name,
+        picture: userData.picture,
+        platform
+      });
+
+      if (response.data?.success) {
+        signIn({
+          user: response.data.user,
+          accessToken: response.data.accessToken,
+        });
+      }
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      setError('Google ile giriş yapılırken bir hata oluştu: ' + (error as Error).message);
     }
   };
   
@@ -127,7 +193,11 @@ export default function LoginScreen() {
           <View style={styles.line} />
         </View>
 
-        <TouchableOpacity style={styles.googleButton}>
+        <TouchableOpacity 
+          style={styles.googleButton}
+          onPress={() => promptAsync()}
+          disabled={!request}
+        >
           <Image 
             source={require('@/assets/images/google-icon.png')} 
             style={styles.googleIcon} 
