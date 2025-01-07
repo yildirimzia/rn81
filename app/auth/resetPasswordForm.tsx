@@ -1,29 +1,24 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert, Linking } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { authApi } from '@/services/api/auth'; // API çağrıları için import
 import { useSearchParams } from 'expo-router/build/hooks';
-// Define the props interface
-interface ResetPasswordFormProps {
-    token: string; // Define the token prop type
-}
 
-export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export default function ResetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const s_token = searchParams.get('s_token')!;
-    const uuid = searchParams.get('uuid')!;
+    const token = searchParams.get('token') || ''; // Fallback to an empty string
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!s_token || !uuid) {
-            // Parametreler eksikse hata mesajı göster
+        if (!token) {
             Alert.alert('Hata', 'Geçersiz bağlantı.');
         }
-    }, [s_token, uuid]);
+    }, [token]);
 
     const handleResetPassword = async () => {
         if (newPassword !== confirmPassword) {
@@ -32,16 +27,17 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         }
 
         try {
-            const response = await authApi.resetPassword({ token: s_token, newPassword });
+            const response = await authApi.resetPassword({ token, newPassword });
 
             if (response.success) {
                 Alert.alert('Başarılı', 'Şifreniz başarıyla sıfırlandı.');
                 router.push('/auth/login'); // Başarı sayfasına yönlendir
             } else {
-                Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
+                setError(response.error?.message || 'Şifre sıfırlama başarısız oldu');
             }
         } catch (error) {
-            Alert.alert('Hata', 'Bir hata oluştu. Lütfen tekrar deneyin.');
+            console.error('Şifre sıfırlama hatası:', error);
+            setError('Bir hata oluştu. Lütfen tekrar deneyin.');
         }
     };
 
@@ -72,6 +68,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                     >
                         <ThemedText style={styles.buttonText}>Şifreyi Sıfırla</ThemedText>
                     </TouchableOpacity>
+                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
                 </View>
             </ThemedView>
         </SafeAreaView>
@@ -114,5 +111,10 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '600',
+    },
+    error: {
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 10,
     },
 });

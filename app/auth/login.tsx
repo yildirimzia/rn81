@@ -4,7 +4,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/context/AuthContext';
 import { authApi } from '@/services/api/auth';
-import { apiClient } from '@/services/api/client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 
@@ -20,7 +19,7 @@ export default function LoginScreen() {
     if (isAuthenticated) {
       router.replace('/(tabs)');
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleLogin = async () => {
 
@@ -95,7 +94,10 @@ export default function LoginScreen() {
 
         <TouchableOpacity 
           style={styles.loginButton} 
-          onPress={handleLogin}
+          onPress={() => {
+            handleLogin();
+          }}
+          
         >
           <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
         </TouchableOpacity>
