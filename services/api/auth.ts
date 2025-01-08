@@ -44,12 +44,15 @@ interface RegistrationResponse {
     success: boolean;
     message: string;
     activationToken: string;
+    remainingTime?: number;
 }
 
 interface VerifyEmailResponse {
     success: boolean;
     message: string;
     user?: User;
+    isAlreadyActive?: boolean;
+    accessToken?: string;
 }
 
 export const authApi = {

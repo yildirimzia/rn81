@@ -19,6 +19,7 @@ export default function RegisterScreen() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
 
   const handleRegister = async () => {
     // Hata state'lerini temizle
@@ -26,6 +27,7 @@ export default function RegisterScreen() {
     setEmailError('');
     setPasswordError('');
     setConfirmPasswordError('');
+    setGeneralError('');
 
     let hasError = false;
 
@@ -68,28 +70,36 @@ export default function RegisterScreen() {
         password 
       });
 
-      console.log('Register response:', response);
-
       if (response?.data?.success) {
         router.push({
           pathname: "/auth/verify-email" as const,
           params: { 
-            activationToken: response.data.activationToken,
+            activationToken: response?.data?.activationToken,
             email,
             password,
             name
           }
         });
       } else {
-        // Başarısız response için email hatasını göster
-        setEmailError(response?.data?.message || 'Kayıt işlemi başarısız');
+        // Eğer aktif kod varsa doğrudan doğrulama sayfasına yönlendir
+        if (response?.data?.activationToken) {
+          router.push({
+            pathname: '/auth/verify-email',
+            params: {
+              email,
+              activationToken: response?.data?.activationToken,
+              password,
+              name,
+              message: response?.data?.message || 'Doğrulama kodu mevcut',
+              remainingTime: response?.data?.remainingTime?.toString()
+            }
+          });
+        } else {
+          setEmailError(response?.data?.message || 'Kayıt işlemi başarısız');
+        }
       }
     } catch (error: any) {
-      // Sadece network vb. hatalar için
-      Alert.alert(
-        'Hata',
-        'Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.'
-      );
+      setGeneralError('Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
@@ -197,6 +207,10 @@ export default function RegisterScreen() {
             <ThemedText style={styles.link}>Giriş Yap</ThemedText>
           </TouchableOpacity>
         </View>
+
+        {generalError ? (
+          <ThemedText style={styles.errorText}>{generalError}</ThemedText>
+        ) : null}
 
       </ThemedView>
     </SafeAreaView>

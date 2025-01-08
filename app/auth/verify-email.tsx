@@ -10,29 +10,31 @@ import { useAuth } from '@/context/AuthContext';
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [error, setError] = useState('');
+  const [error, setError] = useState(params.message as string || '');
   const { activationToken, email } = params;
   const { signIn } = useAuth();
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [timer, setTimer] = useState(120);
+  const [timer, setTimer] = useState(params.remainingTime ? parseInt(params.remainingTime as string) : 120);
   const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prevTimer) => {
-        if (prevTimer <= 1) {
-          clearInterval(interval);
-          setCanResend(true);
-          return 0;
-        }
-        return prevTimer - 1;
-      });
-    }, 1000);
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => {
+          if (prevTimer <= 1) {
+            clearInterval(interval);
+            setCanResend(true);
+            return 0;
+          }
+          return prevTimer - 1;
+        });
+      }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -42,7 +44,7 @@ export default function VerifyEmailScreen() {
 
   const handleVerification = async () => {
     if (!code) {
-      Alert.alert('Hata', 'Lütfen aktivasyon kodunu giriniz');
+      setError('Lütfen aktivasyon kodunu giriniz');
       return;
     }
 
@@ -53,9 +55,15 @@ export default function VerifyEmailScreen() {
         code
       });
 
-      console.log(response, 'response');
-
       if (response?.data?.success) {
+        if (response.data.isAlreadyActive) {
+          await signIn({
+            user: response.data.user!,
+            accessToken: response.data.accessToken!
+          });
+          return;
+        }
+
         const loginResponse = await authApi.login({
           email: email as string,
           password: params.password as string
@@ -67,7 +75,7 @@ export default function VerifyEmailScreen() {
             accessToken: loginResponse.data.accessToken
           });
         }
-      }else{
+      } else {
         setError(response?.data?.message || 'Doğrulama başarısız');
       }
     } catch (error: any) {
@@ -83,6 +91,9 @@ export default function VerifyEmailScreen() {
   const handleResendCode = async () => {
     try {
       setLoading(true);
+      setError('');
+      setCode('');
+      
       const response = await authApi.register({ 
         name: params.name as string,
         email: email as string,
@@ -92,7 +103,11 @@ export default function VerifyEmailScreen() {
       if (response?.data?.success) {
         setTimer(120);
         setCanResend(false);
-        setCode('');
+        Alert.alert('Başarılı', 'Yeni aktivasyon kodu gönderildi');
+      } else if (response?.data?.remainingTime) {
+        setTimer(response.data.remainingTime);
+        setCanResend(false);
+        Alert.alert('Uyarı', `Yeni kod göndermek için ${formatTime(response.data.remainingTime)} bekleyiniz`);
       }
     } catch (error: any) {
       Alert.alert(
@@ -136,14 +151,12 @@ export default function VerifyEmailScreen() {
                 styles.timerProgress,
                 { 
                   borderColor: '#4285F4',
-                  borderWidth: 3 * (timer / 120),
+                  borderWidth: 3,
+                  opacity: timer / 120,
                 }
               ]} />
               <View style={styles.timerContent}>
-                <ThemedText style={[
-                  styles.timerText,
-                  { opacity: timer / 120 }
-                ]}>
+                <ThemedText style={styles.timerText}>
                   {formatTime(timer)}
                 </ThemedText>
               </View>
@@ -163,7 +176,7 @@ export default function VerifyEmailScreen() {
           {canResend && (
             <TouchableOpacity 
               style={[styles.resendButton]} 
-              onPress={handleVerification}
+              onPress={handleResendCode}
               disabled={loading || !canResend}
             >
               <ThemedText style={styles.resendButtonText}>
@@ -172,6 +185,12 @@ export default function VerifyEmailScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {error ? (
+          <ThemedText style={[styles.errorText, { marginTop: 16 }]}>
+            {error}
+          </ThemedText>
+        ) : null}
       </ThemedView>
     </SafeAreaView>
   );
