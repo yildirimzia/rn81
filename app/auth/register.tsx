@@ -76,7 +76,8 @@ export default function RegisterScreen() {
           params: { 
             activationToken: response.data.activationToken,
             email,
-            password
+            password,
+            name
           }
         });
       } else {
@@ -120,6 +121,11 @@ export default function RegisterScreen() {
                 setName(text);
                 setNameError('');
               }}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              textContentType="name"
+              autoComplete="name"
             />
             {nameError ? <ThemedText style={styles.errorText}>{nameError}</ThemedText> : null}
           </View>
@@ -136,6 +142,10 @@ export default function RegisterScreen() {
                 setEmailError('');
               }}
               autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              textContentType="emailAddress"
+              autoComplete="email"
             />
             {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
           </View>
