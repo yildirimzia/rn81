@@ -136,10 +136,7 @@ export default function VerifyEmailScreen() {
                 styles.timerProgress,
                 { 
                   borderColor: '#4285F4',
-                  opacity: timer / 120,
-                  borderWidth: 3,
-                  borderRadius: 32,
-                  transform: [{ rotate: `${((120 - timer) / 120) * 360}deg` }]
+                  borderWidth: 3 * (timer / 120),
                 }
               ]} />
               <View style={styles.timerContent}>
@@ -261,7 +258,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 32,
-    borderWidth: 3,
     borderColor: '#4285F4',
   },
   timerContent: {
