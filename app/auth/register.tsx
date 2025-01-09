@@ -72,12 +72,13 @@ export default function RegisterScreen() {
 
       if (response?.data?.success) {
         router.push({
-          pathname: "/auth/verify-email" as const,
+          pathname: "/auth/verify-email",
           params: { 
             activationToken: response?.data?.activationToken,
             email,
             password,
-            name
+            name,
+            message: response.data.message
           }
         });
       } else {
@@ -90,7 +91,7 @@ export default function RegisterScreen() {
               activationToken: response?.data?.activationToken,
               password,
               name,
-              message: response?.data?.message || 'Doğrulama kodu mevcut',
+              message: response?.data?.message,
               remainingTime: response?.data?.remainingTime?.toString()
             }
           });

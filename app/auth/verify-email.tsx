@@ -10,7 +10,8 @@ import { useAuth } from '@/context/AuthContext';
 export default function VerifyEmailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [error, setError] = useState(params.message as string || '');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { activationToken, email } = params;
   const { signIn } = useAuth();
 
@@ -36,6 +37,16 @@ export default function VerifyEmailScreen() {
     }
   }, [timer]);
 
+  useEffect(() => {
+    if (params.message) {
+      if (params.remainingTime) {
+        setError(params.message as string);
+      } else {
+        setSuccess(params.message as string);
+      }
+    }
+  }, [params.message]);
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -54,27 +65,13 @@ export default function VerifyEmailScreen() {
         activationToken: activationToken as string,
         code
       });
+      console.log(response);
 
       if (response?.data?.success) {
-        if (response.data.isAlreadyActive) {
-          await signIn({
-            user: response.data.user!,
-            accessToken: response.data.accessToken!
-          });
-          return;
-        }
-
-        const loginResponse = await authApi.login({
-          email: email as string,
-          password: params.password as string
+        await signIn({
+          user: response.data.user!,
+          accessToken: response.data.accessToken!
         });
-
-        if (loginResponse?.data?.success) {
-          await signIn({
-            user: loginResponse.data.user,
-            accessToken: loginResponse.data.accessToken
-          });
-        }
       } else {
         setError(response?.data?.message || 'Doğrulama başarısız');
       }
@@ -92,6 +89,7 @@ export default function VerifyEmailScreen() {
     try {
       setLoading(true);
       setError('');
+      setSuccess('');
       setCode('');
       
       const response = await authApi.register({ 
@@ -103,17 +101,14 @@ export default function VerifyEmailScreen() {
       if (response?.data?.success) {
         setTimer(120);
         setCanResend(false);
-        Alert.alert('Başarılı', 'Yeni aktivasyon kodu gönderildi');
+        setSuccess('Yeni aktivasyon kodu gönderildi');
       } else if (response?.data?.remainingTime) {
         setTimer(response.data.remainingTime);
         setCanResend(false);
-        Alert.alert('Uyarı', `Yeni kod göndermek için ${formatTime(response.data.remainingTime)} bekleyiniz`);
+        setError(`Yeni kod göndermek için ${formatTime(response.data.remainingTime)} bekleyiniz`);
       }
     } catch (error: any) {
-      Alert.alert(
-        'Hata',
-        error.response?.data?.message || 'Kod gönderme işlemi başarısız'
-      );
+      setError(error.response?.data?.message || 'Kod gönderme işlemi başarısız');
     } finally {
       setLoading(false);
     }
@@ -135,6 +130,18 @@ export default function VerifyEmailScreen() {
         </ThemedText>
 
         <View style={styles.form}>
+          {success ? (
+            <ThemedText style={styles.successText}>
+              {success}
+            </ThemedText>
+          ) : null}
+
+          {error ? (
+            <ThemedText style={styles.errorText}>
+              {error}
+            </ThemedText>
+          ) : null}
+
           <TextInput 
             placeholder="Aktivasyon Kodu"
             style={styles.input}
@@ -185,12 +192,6 @@ export default function VerifyEmailScreen() {
             </TouchableOpacity>
           )}
         </View>
-
-        {error ? (
-          <ThemedText style={[styles.errorText, { marginTop: 16 }]}>
-            {error}
-          </ThemedText>
-        ) : null}
       </ThemedView>
     </SafeAreaView>
   );
@@ -254,10 +255,9 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF3B30',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
+    fontSize: 14,
     textAlign: 'center',
+    marginBottom: 16,
   },
   timerContainer: {
     alignItems: 'center',
@@ -304,5 +304,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',
+  },
+  successText: {
+    color: '#34C759',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
   },
 }); 
