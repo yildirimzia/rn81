@@ -16,7 +16,7 @@ export default function AuthLayout() {
           name="login" 
           options={{
             animation: 'none',
-            header: () => null, // Header tamamen gizlenir
+            header: () => null,
           }}
         />
         <Stack.Screen 
@@ -24,17 +24,25 @@ export default function AuthLayout() {
           options={{
             presentation: 'modal',
             animation: 'slide_from_bottom',
-            header: () => null, // Header tamamen gizlenir
+            header: () => null,
           }}
         />
-         <Stack.Screen
-        name="resetPassword"
-        options={{
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-          header: () => null, // Header tamamen gizlenir
-        }}
-      />
+        <Stack.Screen
+          name="verify-email"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            header: () => null,
+          }}
+        />
+        <Stack.Screen
+          name="resetPassword"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            header: () => null,
+          }}
+        />
       </Stack>
     </View>
   );
