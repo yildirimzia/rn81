@@ -302,7 +302,7 @@ export default function RegisterScreen() {
 
           <View style={styles.footer}>
             <ThemedText>Zaten hesabınız var mı? </ThemedText>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.push('/auth/login')}>
               <ThemedText style={styles.link}>Giriş Yap</ThemedText>
             </TouchableOpacity>
           </View>

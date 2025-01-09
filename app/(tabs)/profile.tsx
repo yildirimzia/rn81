@@ -23,7 +23,10 @@ type User = AuthUser & {
 
 export default function ProfileScreen() {
   const { user: authUser, signOut, isAuthenticated } = useAuth();
+
+
   const user = authUser as User;
+  console.log(user)
   const router = useRouter();
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? 'light'].tint;
