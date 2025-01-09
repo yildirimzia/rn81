@@ -27,9 +27,12 @@ class ApiClient {
         return ApiClient.instance;
     }
 
-    setToken(token: string | null) {
-        console.log('Token being set in ApiClient:', token);
-        this.token = token;
+    setToken(token: string | null): void {
+        if (token) {
+            localStorage.setItem('accessToken', token);
+        } else {
+            localStorage.removeItem('accessToken');
+        }
     }
 
     private async request<T>(endpoint: string, config: RequestConfig): Promise<ApiResponse<T>> {
@@ -90,6 +93,10 @@ class ApiClient {
 
     delete<T>(endpoint: string, config: Omit<RequestConfig, 'method'> = {}) {
         return this.request<T>(endpoint, { ...config, method: 'DELETE' });
+    }
+
+    getToken(): string | null {
+        return localStorage.getItem('accessToken');
     }
 }
 

@@ -37,14 +37,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (data: { user: User; accessToken: string }) => {
     try {
-        // Sadece ApiClient'ta tut ve state'i güncelle
-        apiClient.setToken(data.accessToken);
-        updateState({
-            user: data.user,
-            isAuthenticated: true
-        });
+      apiClient.setToken(data.accessToken); // Token'ı persistent storage'a kaydet
+      updateState({
+        user: data.user,
+        isAuthenticated: true
+      });
     } catch (error) {
-        console.error('SignIn error:', error);
+      console.error('SignIn error:', error);
     }
   }, [updateState]);
 
@@ -78,8 +77,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [updateState]);
 
   useEffect(() => {
-    // İlk yükleme kontrolü
-    updateState({ isInitialized: true });
+    // Sayfa yüklendiğinde veya yenilendiğinde token kontrolü
+    const initializeAuth = async () => {
+      try {
+        const token = apiClient.getToken(); // API client'ınızdan token'ı alın
+        
+        if (token) {
+          // Token varsa kullanıcı bilgilerini getir
+          const response = await authApi.getCurrentUser(); // Böyle bir endpoint'iniz olmalı
+          if (response.success && response.data?.user) {
+            updateState({
+              user: response.data.user,
+              isAuthenticated: true,
+              isInitialized: true
+            });
+          } else {
+            // Token geçersizse temizle
+            apiClient.setToken(null);
+            updateState({
+              user: null,
+              isAuthenticated: false,
+              isInitialized: true
+            });
+          }
+        } else {
+          updateState({ isInitialized: true });
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        updateState({ isInitialized: true });
+      }
+    };
+
+    initializeAuth();
   }, [updateState]);
 
   const value = useMemo(() => ({

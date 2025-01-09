@@ -103,5 +103,9 @@ export const authApi = {
             activation_token: data.activationToken,
             activation_code: data.code
         });
-    }
+    },
+
+    getCurrentUser: async () => {
+        return apiClient.get<{ user: User }>('me');
+    },
 }; 
