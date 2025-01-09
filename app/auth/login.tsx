@@ -17,6 +17,8 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -61,9 +63,17 @@ export default function LoginScreen() {
   }, [response]);
 
   const handleLogin = async () => {
+    setEmailError(null);
+    setPasswordError(null);
+    setError(null);
 
+    if (!email) {
+      setEmailError('E-posta alanı boş bırakılamaz');
+    }
+    if (!password) {
+      setPasswordError('Şifre alanı boş bırakılamaz');
+    }
     if (!email || !password) {
-      setError('Lütfen e-posta adresinizi ve şifrenizi giriniz');
       return;
     }
 
@@ -137,9 +147,12 @@ export default function LoginScreen() {
         <View style={styles.form}>
           <TextInput 
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setEmailError(null);
+            }}
             placeholder="E-posta"
-            style={styles.input}
+            style={[styles.input, emailError && styles.inputError]}
             placeholderTextColor="#999"
             autoCapitalize="none"
             keyboardType="email-address"
@@ -148,18 +161,24 @@ export default function LoginScreen() {
             enablesReturnKeyAutomatically
             onSubmitEditing={() => passwordInputRef.current?.focus()}
           />
+          {emailError && <ThemedText style={styles.error}>{emailError}</ThemedText>}
+          
           <TextInput 
             ref={passwordInputRef}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError(null);
+            }}
             placeholder="Şifre"
-            style={styles.input}
+            style={[styles.input, passwordError && styles.inputError]}
             secureTextEntry
             placeholderTextColor="#999"
             returnKeyType="done"
             enablesReturnKeyAutomatically
             onSubmitEditing={handleLogin}
           />
+          {passwordError && <ThemedText style={styles.error}>{passwordError}</ThemedText>}
 
           {error && (
             <ThemedText style={styles.error}>{error}</ThemedText>
@@ -243,6 +262,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
   },
+  inputError: {
+    borderColor: '#FF3B30',
+    borderWidth: 1,
+  },
   forgotPassword: {
     alignSelf: 'flex-end',
   },
@@ -300,9 +323,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   error: {
-    color: 'red',
-    textAlign: 'left',
-    marginBottom: 16,
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: -10,
+    marginLeft: 4,
   },
   successMessage: {
     color: 'green',
