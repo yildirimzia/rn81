@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { authApi } from '../services/api/auth';
 import { apiClient } from '../services/api/client';
 
-type User = {
+export type User = {
   _id: string;
   name: string;
   email: string;

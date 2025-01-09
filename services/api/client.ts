@@ -16,7 +16,6 @@ type RequestConfig = {
 class ApiClient {
     private static instance: ApiClient;
     private token: string | null = null;
-    private isRefreshing = false;
 
     private constructor() { }
 
@@ -28,11 +27,11 @@ class ApiClient {
     }
 
     setToken(token: string | null): void {
-        if (token) {
-            localStorage.setItem('accessToken', token);
-        } else {
-            localStorage.removeItem('accessToken');
-        }
+        this.token = token;
+    }
+
+    getToken(): string | null {
+        return this.token;
     }
 
     private async request<T>(endpoint: string, config: RequestConfig): Promise<ApiResponse<T>> {
@@ -53,16 +52,7 @@ class ApiClient {
                 body: config.body ? JSON.stringify(config.body) : undefined,
             });
 
-            const cookies = response.headers.get('set-cookie');
-            console.log('Response cookies:', cookies);
-
             const data = await response.json();
-
-            if (endpoint === 'login' && data.success && data.accessToken) {
-                this.token = data.accessToken;
-                console.log('Token saved:', this.token);
-            }
-
             return {
                 success: true,
                 data: data as T
@@ -93,10 +83,6 @@ class ApiClient {
 
     delete<T>(endpoint: string, config: Omit<RequestConfig, 'method'> = {}) {
         return this.request<T>(endpoint, { ...config, method: 'DELETE' });
-    }
-
-    getToken(): string | null {
-        return localStorage.getItem('accessToken');
     }
 }
 
