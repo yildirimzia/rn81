@@ -53,7 +53,12 @@ export const authApi = {
         return apiClient.post<LoginResponse>('login', credentials);
     },
 
-    register: async (data: { name: string; email: string; password: string; gender: string }): Promise<ApiResponse<RegistrationResponse>> => {
+    register: async (data: {
+        name: string;
+        email: string;
+        password: string;
+        gender: 'male' | 'female' | 'not_specified'
+    }): Promise<ApiResponse<RegistrationResponse>> => {
         try {
             const response = await apiClient.post<RegistrationResponse>('registration', {
                 name: data.name,

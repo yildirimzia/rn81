@@ -153,18 +153,6 @@ export default function VerifyEmailScreen() {
         </ThemedText>
 
         <View style={styles.form}>
-          {success ? (
-            <ThemedText style={styles.successText}>
-              {success}
-            </ThemedText>
-          ) : null}
-
-          {error ? (
-            <ThemedText style={styles.errorText}>
-              {error}
-            </ThemedText>
-          ) : null}
-
           <TextInput 
             placeholder="Aktivasyon Kodu"
             style={styles.input}
@@ -202,6 +190,19 @@ export default function VerifyEmailScreen() {
               {loading ? 'Doğrulanıyor...' : 'Doğrula'}
             </ThemedText>
           </TouchableOpacity>
+
+          {success ? (
+            <ThemedText style={styles.successText}>
+              {success}
+            </ThemedText>
+          ) : null}
+
+          {error ? (
+            <ThemedText style={styles.errorText}>
+              {error}
+            </ThemedText>
+          ) : null}
+
 
           {canResend && (
             <TouchableOpacity 
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
   successText: {
     color: '#34C759',
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 16,
   },
 }); 
