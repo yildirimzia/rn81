@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -13,6 +13,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [gender, setGender] = useState<'male' | 'female' | 'not_specified'>('not_specified');
   
   // Hata state'leri
   const [nameError, setNameError] = useState('');
@@ -67,7 +68,8 @@ export default function RegisterScreen() {
       const response = await authApi.register({ 
         name, 
         email: email.trim().toLowerCase(),
-        password 
+        password,
+        gender: gender
       });
 
       if (response?.data?.success) {
@@ -78,7 +80,8 @@ export default function RegisterScreen() {
             email,
             password,
             name,
-            message: response.data.message
+            message: response.data.message,
+            gender: gender.toString()
           }
         });
       } else {
@@ -92,7 +95,8 @@ export default function RegisterScreen() {
               password,
               name,
               message: response?.data?.message,
-              remainingTime: response?.data?.remainingTime?.toString()
+              remainingTime: response?.data?.remainingTime?.toString(),
+              gender: (response?.data?.gender || gender).toString()
             }
           });
         } else {
@@ -189,6 +193,46 @@ export default function RegisterScreen() {
               }}
             />
             {confirmPasswordError ? <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText> : null}
+          </View>
+
+          <View style={styles.genderContainer}>
+            <View style={styles.genderRowContainer}>
+              <TouchableOpacity 
+                style={styles.genderOption}
+                onPress={() => setGender('female')}
+              >
+                <Ionicons 
+                  name={gender === 'female' ? 'radio-button-on' : 'radio-button-off'} 
+                  size={24} 
+                  color={gender === 'female' ? '#007AFF' : '#666'} 
+                />
+                <Text style={styles.genderText}>Kadın</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.genderOption}
+                onPress={() => setGender('male')}
+              >
+                <Ionicons 
+                  name={gender === 'male' ? 'radio-button-on' : 'radio-button-off'} 
+                  size={24} 
+                  color={gender === 'male' ? '#007AFF' : '#666'} 
+                />
+                <Text style={styles.genderText}>Erkek</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.genderOption}
+                onPress={() => setGender('not_specified')}
+              >
+                <Ionicons 
+                  name={gender === 'not_specified' ? 'radio-button-on' : 'radio-button-off'} 
+                  size={24} 
+                  color={gender === 'not_specified' ? '#007AFF' : '#666'} 
+                />
+                <Text style={styles.genderText}>Belirtmek istemiyorum</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <TouchableOpacity 
@@ -300,5 +344,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
-  }
+  },
+  genderContainer: {
+    marginVertical: 10,
+  },
+  genderRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 8,
+    gap: 24,
+  },
+  genderOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginHorizontal: 2,
+  },
+  genderText: {
+    fontSize: 13,
+    color: '#333',
+    flexShrink: 1,
+  },
+  label: {
+    fontSize: 16,
+    color: '#333',
+  },
 }); 

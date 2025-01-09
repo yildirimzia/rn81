@@ -1,4 +1,4 @@
-import { ApiResponse, PasswordResetResponse } from './types';
+import { ApiResponse, PasswordResetResponse, RegistrationResponse } from './types';
 import { apiClient } from './client';
 
 type User = {
@@ -40,13 +40,6 @@ interface GoogleLoginRequest {
     platform: 'web' | 'android' | 'ios';
 }
 
-interface RegistrationResponse {
-    success: boolean;
-    message: string;
-    activationToken: string;
-    remainingTime?: number;
-}
-
 interface VerifyEmailResponse {
     success: boolean;
     message: string;
@@ -60,12 +53,13 @@ export const authApi = {
         return apiClient.post<LoginResponse>('login', credentials);
     },
 
-    register: async (data: { name: string; email: string; password: string }): Promise<ApiResponse<RegistrationResponse>> => {
+    register: async (data: { name: string; email: string; password: string; gender: string }): Promise<ApiResponse<RegistrationResponse>> => {
         try {
             const response = await apiClient.post<RegistrationResponse>('registration', {
                 name: data.name,
                 email: data.email.trim().toLowerCase(),
-                password: data.password
+                password: data.password,
+                gender: data.gender
             });
             return response;
         } catch (error) {
@@ -93,10 +87,8 @@ export const authApi = {
         console.log('Sending Google login request:', data);
         try {
             const response = await apiClient.post<LoginResponse>('google-login', data);
-            console.log('Google login response:', response);
             return response;
         } catch (error) {
-            console.error('Google login error:', error);
             throw error;
         }
     },

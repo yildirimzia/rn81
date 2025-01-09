@@ -14,3 +14,11 @@ export type PasswordResetResponse = {
     success: boolean;
     message: string;
 };
+
+export interface RegistrationResponse {
+    success: boolean;
+    message: string;
+    activationToken: string;
+    remainingTime?: number;
+    gender?: 'male' | 'female' | 'not_specified';
+}
