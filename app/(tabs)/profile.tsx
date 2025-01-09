@@ -17,11 +17,6 @@ type MenuItemProps = {
   danger?: boolean;
 };
 
-type MenuSectionProps = {
-  title: string;
-  children: React.ReactNode;
-};
-
 type User = AuthUser & {
   avatar?: string;
 };
@@ -50,16 +45,12 @@ export default function ProfileScreen() {
     >
       <MaterialIcons name={icon} size={24} color={danger ? Colors.danger : color} />
       <ThemedText style={[styles.menuText, danger && styles.dangerText]}>{title}</ThemedText>
-      <MaterialIcons name="chevron-right" size={20} color={danger ? Colors.danger : Colors[colorScheme ?? 'light'].text} />
     </Pressable>
   );
 
-  const MenuSection = ({ title, children }: MenuSectionProps) => (
-    <View style={styles.menuSection}>
-      <ThemedText style={styles.menuSectionTitle}>{title}</ThemedText>
-      <View style={styles.menuSectionContent}>
-        {children}
-      </View>
+  const MenuContainer = ({ children }: { children: React.ReactNode }) => (
+    <View style={styles.menuContainer}>
+      {children}
     </View>
   );
 
@@ -85,8 +76,7 @@ export default function ProfileScreen() {
           <ThemedText style={styles.email}>{user.email}</ThemedText>
         </View>
 
-        {/* Kişisel Ayarlar */}
-        <MenuSection title="Kişisel Ayarlar">
+        <MenuContainer>
           <MenuItem 
             icon="person" 
             title="Kişisel Bilgilerim"
@@ -107,10 +97,9 @@ export default function ProfileScreen() {
             title="Bildirim Ayarlarım"
             onPress={() => {}} 
           />
-        </MenuSection>
 
-        {/* Genel Ayarlar */}
-        <MenuSection title="Genel Ayarlar">
+          <View style={[styles.divider, styles.thickDivider]} />
+
           <MenuItem 
             icon="info" 
             title="Hakkımızda"
@@ -126,7 +115,7 @@ export default function ProfileScreen() {
             title="Çıkış Yap"
             onPress={handleSignOut}
           />
-        </MenuSection>
+        </MenuContainer>
       </ScrollView>
     </ThemedView>
   );
@@ -171,20 +160,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     opacity: 0.7,
   },
-  menuSection: {
+  menuContainer: {
     marginTop: 24,
-    paddingHorizontal: 16,
-  },
-  menuSectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-    paddingHorizontal: 12,
-  },
-  menuSectionContent: {
+    marginHorizontal: 16,
     backgroundColor: Colors.light.cardBackground,
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  divider: {
+    width: '100%',
+    padding: 0,
+    margin: 0,
+    height: 9,
+    backgroundColor: '#F5F5F5',
+  },
+  thickDivider: {
+    opacity: 1,
   },
   menuItem: {
     flexDirection: 'row',
