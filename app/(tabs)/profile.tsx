@@ -88,7 +88,7 @@ export default function ProfileScreen() {
           <MenuItem 
             icon="lock" 
             title="Şifre Değiştir"
-            onPress={() => {}} 
+            onPress={() => { router.push('/profile/change-password'); }} 
           />
           <MenuItem 
             icon="email" 

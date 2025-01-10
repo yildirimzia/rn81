@@ -48,6 +48,12 @@ interface VerifyEmailResponse {
     accessToken?: string;
 }
 
+
+interface UpdatePasswordRequest {
+    oldPassword: string;
+    newPassword: string;
+}
+
 export const authApi = {
     login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
         return apiClient.post<LoginResponse>('login', credentials);
@@ -107,5 +113,11 @@ export const authApi = {
 
     updateUserInfo: async (data: UpdateUserInfoRequest): Promise<ApiResponse<{ success: boolean }>> => {
         return apiClient.put<{ success: boolean }>('update-user-info', data);
-    }
+    },
+
+    updateUserPassword: async (data: UpdatePasswordRequest): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+        return apiClient.put<{ success: boolean; message: string }>('update-user-password', data);
+    },
+
+
 }; 

@@ -43,20 +43,6 @@ export default function UserInfoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.content}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={() => {
-                router.back();
-                console.log("going back");
-            }}
-          >
-            <Ionicons name="arrow-back" size={24} color="#000" />
-          </TouchableOpacity>
-          <ThemedText style={styles.title}>Bilgilerim</ThemedText>
-          <View style={styles.placeholder} />
-        </View>
-
         <ScrollView 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
