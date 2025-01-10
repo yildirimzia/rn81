@@ -138,8 +138,12 @@ export const authApi = {
         return apiClient.post<{ success: boolean; message: string }>('request-email-change', data);
     },
 
-    verifyEmailChange: async (data: EmailChangeVerification): Promise<ApiResponse<{ success: boolean; message: string }>> => {
-        return apiClient.post<{ success: boolean; message: string }>('verify-email-change', data);
+    verifyEmailChange: async (newEmail: string, activationCode: string): Promise<ApiResponse<any>> => {
+        console.log('Verifying email change:', { newEmail, activationCode });
+        return apiClient.post('verify-email-change', {
+            newEmail,
+            activationCode: activationCode.toString()
+        });
     },
 
 }; 

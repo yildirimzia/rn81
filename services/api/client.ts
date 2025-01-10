@@ -41,6 +41,7 @@ class ApiClient {
 
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
+            console.log('Using token:', this.token);
         }
 
         try {
@@ -51,6 +52,11 @@ class ApiClient {
                 mode: 'cors',
                 body: config.body ? JSON.stringify(config.body) : undefined,
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'API request failed');
+            }
 
             const data = await response.json();
             return {

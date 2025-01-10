@@ -41,21 +41,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (data: { user: User; accessToken: string }) => {
     try {
-      // Önce token'ı ayarla
-      apiClient.setToken(data.accessToken);
-      // Sonra state'i güncelle
-      updateState({
-        user: data.user,
-        isAuthenticated: true
-      });
+        console.log('Setting token:', data.accessToken); // Debug için
+        apiClient.setToken(data.accessToken);
+        updateState({
+            user: data.user,
+            isAuthenticated: true
+        });
     } catch (error) {
-      console.error('SignIn error:', error);
-      // Hata durumunda state ve token'ı temizle
-      apiClient.setToken(null);
-      updateState({
-        user: null,
-        isAuthenticated: false
-      });
+        console.error('SignIn error:', error);
+        apiClient.setToken(null);
+        updateState({
+            user: null,
+            isAuthenticated: false
+        });
     }
   }, [updateState]);
 

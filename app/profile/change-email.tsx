@@ -122,10 +122,10 @@ export default function ChangeEmailScreen() {
         return;
       }
 
-      const response = await authApi.verifyEmailChange({
-        newEmail: formData.newEmail,
-        activationCode: formData.activationCode
-      });
+      const response = await authApi.verifyEmailChange(
+        formData.newEmail,
+        formData.activationCode
+      );
 
       console.log(response, 'responseemaill');
 
