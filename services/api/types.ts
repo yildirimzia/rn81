@@ -23,7 +23,7 @@ export interface RegistrationResponse {
     gender?: 'male' | 'female' | 'not_specified';
 }
 
-interface UpdateUserInfoRequest {
+export interface UpdateUserInfoRequest {
     name: string;
     email?: string;
     gender: string;
