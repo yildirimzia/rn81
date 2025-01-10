@@ -146,4 +146,11 @@ export const authApi = {
         });
     },
 
+    updateUserAvatar: async (data: { avatar: string }): Promise<ApiResponse<{
+        success: boolean;
+        message: string;
+        user: User;
+    }>> => {
+        return apiClient.put('update-user-avatar', data);
+    },
 }; 

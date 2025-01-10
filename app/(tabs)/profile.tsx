@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Pressable, Image } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,6 +8,9 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { User as AuthUser } from '@/context/AuthContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { authApi } from '@/services/api/auth';
+import { useState } from 'react';
 
 type MenuItemProps = {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -18,12 +21,15 @@ type MenuItemProps = {
 };
 
 type User = AuthUser & {
-  avatar?: string;
+  avatar?: {
+    url: string;
+    public_id: string;
+  };
 };
 
 export default function ProfileScreen() {
-  const { user: authUser, signOut, isAuthenticated } = useAuth();
-
+  const { user: authUser, signOut, isAuthenticated, updateUser } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
 
   const user = authUser as User;
   console.log(user)
@@ -34,6 +40,45 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     await signOut();
     // router.push('/auth/login')
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('İzin Gerekli', 'Galeriye erişim izni gereklidir.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setIsUploading(true);
+        try {
+          const response = await authApi.updateUserAvatar({
+            avatar: `data:image/jpeg;base64,${result.assets[0].base64}`
+          });
+
+          if (response?.data?.success) {
+            updateUser(response.data.user);
+            Alert.alert('Başarılı', 'Profil resmi güncellendi');
+          }
+        } catch (error: any) {
+          Alert.alert('Hata', error.message || 'Resim yüklenirken bir hata oluştu');
+        }
+        setIsUploading(false);
+      }
+    } catch (error) {
+      Alert.alert('Hata', 'Resim seçilirken bir hata oluştu');
+      setIsUploading(false);
+    }
   };
 
   if (!isAuthenticated || !user) {
@@ -62,9 +107,17 @@ export default function ProfileScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Profil Başlığı */}
         <View style={styles.header}>
-          <Pressable style={styles.avatarContainer}>
-            {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.avatar} />
+          <Pressable 
+            style={styles.avatarContainer}
+            onPress={handleImagePick}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <View style={styles.avatarPlaceholder}>
+                <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
+              </View>
+            ) : user?.avatar?.url ? (
+              <Image source={{ uri: user.avatar.url }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <MaterialIcons 
