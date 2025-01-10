@@ -8,6 +8,7 @@ export type User = {
   email: string;
   role: string;
   isVerified: boolean;
+  gender?: 'female' | 'male' | 'not_specified';
 };
 
 type AuthContextType = {
@@ -18,6 +19,7 @@ type AuthContextType = {
   isInitialized: boolean;
   successMessage: string | null;
   setSuccessMessage: (message: string | null) => void;
+  updateUser: (userData: Partial<User>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -77,6 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateState({ successMessage: message });
   }, [updateState]);
 
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setState(prev => ({
+      ...prev,
+      user: prev.user ? { ...prev.user, ...userData } : null
+    }));
+  }, []);
+
   useEffect(() => {
     // İlk yükleme kontrolü
     updateState({ isInitialized: true });
@@ -89,8 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     isInitialized: state.isInitialized,
     successMessage: state.successMessage,
-    setSuccessMessage
-  }), [state.isAuthenticated, state.user, state.isInitialized, state.successMessage, signIn, signOut, setSuccessMessage]);
+    setSuccessMessage,
+    updateUser
+  }), [state.isAuthenticated, state.user, state.isInitialized, state.successMessage, signIn, signOut, setSuccessMessage, updateUser]);
 
   if (!state.isInitialized) {
     return null;

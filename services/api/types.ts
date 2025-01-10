@@ -22,3 +22,9 @@ export interface RegistrationResponse {
     remainingTime?: number;
     gender?: 'male' | 'female' | 'not_specified';
 }
+
+interface UpdateUserInfoRequest {
+    name: string;
+    email?: string;
+    gender: string;
+}

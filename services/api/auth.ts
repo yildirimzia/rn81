@@ -1,4 +1,4 @@
-import { ApiResponse, PasswordResetResponse, RegistrationResponse } from './types';
+import { ApiResponse, PasswordResetResponse, RegistrationResponse, UpdateUserInfoRequest } from './types';
 import { apiClient } from './client';
 
 type User = {
@@ -103,5 +103,9 @@ export const authApi = {
             activation_token: data.activationToken,
             activation_code: data.code
         });
+    },
+
+    updateUserInfo: async (data: UpdateUserInfoRequest): Promise<ApiResponse<{ success: boolean }>> => {
+        return apiClient.put<{ success: boolean }>('update-user-info', data);
     }
 }; 

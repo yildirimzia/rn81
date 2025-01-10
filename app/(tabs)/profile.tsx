@@ -33,11 +33,11 @@ export default function ProfileScreen() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace('/auth/login');
+    // router.push('/auth/login')
   };
 
   if (!isAuthenticated || !user) {
-    router.replace('/auth/login');
+    // router.push('/auth/login')
     return null;
   }
 
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
         {/* Profil Başlığı */}
         <View style={styles.header}>
           <Pressable style={styles.avatarContainer}>
-            {user.avatar ? (
+            {user?.avatar ? (
               <Image source={{ uri: user.avatar }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
@@ -75,15 +75,15 @@ export default function ProfileScreen() {
               </View>
             )}
           </Pressable>
-          <ThemedText style={styles.name}>{user.name}</ThemedText>
-          <ThemedText style={styles.email}>{user.email}</ThemedText>
+          <ThemedText style={styles.name}>{user?.name}</ThemedText>
+          <ThemedText style={styles.email}>{user?.email}</ThemedText>
         </View>
 
         <MenuContainer>
           <MenuItem 
             icon="person" 
             title="Kişisel Bilgilerim"
-            onPress={() => {}} 
+            onPress={() => {router.push('/profile/user-info'); }} 
           />
           <MenuItem 
             icon="lock" 
