@@ -41,14 +41,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (data: { user: User; accessToken: string }) => {
     try {
-        // Sadece ApiClient'ta tut ve state'i güncelle
-        apiClient.setToken(data.accessToken);
-        updateState({
-            user: data.user,
-            isAuthenticated: true
-        });
+      // Önce token'ı ayarla
+      apiClient.setToken(data.accessToken);
+      // Sonra state'i güncelle
+      updateState({
+        user: data.user,
+        isAuthenticated: true
+      });
     } catch (error) {
-        console.error('SignIn error:', error);
+      console.error('SignIn error:', error);
+      // Hata durumunda state ve token'ı temizle
+      apiClient.setToken(null);
+      updateState({
+        user: null,
+        isAuthenticated: false
+      });
     }
   }, [updateState]);
 
@@ -85,10 +92,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [updateState]);
 
   const updateUser = useCallback((userData: Partial<User>) => {
-    setState(prev => ({
-      ...prev,
-      user: prev.user ? { ...prev.user, ...userData } : null
-    }));
+    setState(prev => {
+      const newUser = prev.user ? { ...prev.user, ...userData } : null;
+      // User güncellendiğinde state'i hemen güncelle
+      return {
+        ...prev,
+        user: newUser,
+        isAuthenticated: !!newUser
+      };
+    });
   }, []);
 
   useEffect(() => {
