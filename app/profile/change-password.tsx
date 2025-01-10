@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 import { authApi } from '@/services/api/auth';
 
-export default function UserInfoScreen() {
+export default function ChangePasswordScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -17,8 +17,6 @@ export default function UserInfoScreen() {
     newPassword: '',
     newPasswordConfirm: ''
   });
-
-  const router = useRouter();
 
   const handleSubmit = async () => {
     try {

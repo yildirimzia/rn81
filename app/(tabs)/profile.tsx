@@ -93,7 +93,7 @@ export default function ProfileScreen() {
           <MenuItem 
             icon="email" 
             title="E-posta Değiştir"
-            onPress={() => {}} 
+            onPress={() => {router.push('/profile/change-email');}} 
           />
           <MenuItem 
             icon="notifications" 

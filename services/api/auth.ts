@@ -54,6 +54,21 @@ interface UpdatePasswordRequest {
     newPassword: string;
 }
 
+interface UpdateEmailRequest {
+    currentPassword: string;
+    newEmail: string;
+}
+
+interface EmailChangeRequest {
+    newEmail: string;
+    password: string;
+}
+
+interface EmailChangeVerification {
+    newEmail: string;
+    activationCode: string;
+}
+
 export const authApi = {
     login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
         return apiClient.post<LoginResponse>('login', credentials);
@@ -119,5 +134,12 @@ export const authApi = {
         return apiClient.put<{ success: boolean; message: string }>('update-user-password', data);
     },
 
+    requestEmailChange: async (data: EmailChangeRequest): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+        return apiClient.post<{ success: boolean; message: string }>('request-email-change', data);
+    },
+
+    verifyEmailChange: async (data: EmailChangeVerification): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+        return apiClient.post<{ success: boolean; message: string }>('verify-email-change', data);
+    },
 
 }; 

@@ -27,4 +27,5 @@ export interface UpdateUserInfoRequest {
     name: string;
     email?: string;
     gender: string;
+    password?: string;
 }

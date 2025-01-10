@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authApi } from '../services/api/auth';
 import { apiClient } from '../services/api/client';
+import { useRouter } from 'expo-router';
 
 export type User = {
   _id: string;
@@ -25,6 +26,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [state, setState] = useState({
     isAuthenticated: false,
     user: null as User | null,
@@ -61,17 +63,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 user: null,
                 isAuthenticated: false
             });
+            // Ana sayfaya yönlendir
+            router.replace('/');
         } else {
             console.error('Logout failed:', response.error);
         }
     } catch (error) {
         console.error('Logout error:', error);
-        // Hata durumunda da state'i temizle
+        // Hata durumunda da state'i temizle ve yönlendir
         apiClient.setToken(null);
         updateState({
             user: null,
             isAuthenticated: false
         });
+        router.replace('/');
     }
   }, [updateState]);
 

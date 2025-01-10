@@ -15,7 +15,7 @@ export default function ProfileLayout() {
         },
         presentation: 'modal',
         animation: 'slide_from_bottom',
-        headerLeft: ({ tintColor }) => (
+        headerLeft: ({  }) => (
           <TouchableOpacity 
             onPress={() => router.back()}
             style={{ marginLeft: 10 }}
@@ -36,6 +36,12 @@ export default function ProfileLayout() {
         options={{
           headerTitle: 'Şifremi Değiştir',
         }}
+      />
+      <Stack.Screen
+       name='change-email'
+       options={{
+        headerTitle: 'E-Posta Değiştir',
+       }}
       />
     </Stack>
   );
