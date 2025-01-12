@@ -3,6 +3,7 @@ import { ApiResponse, ApiError } from './types';
 
 // IP adresi üzerinden HTTPS URL
 const API_URL = 'http://localhost:8000';
+// const API_URL = 'http://192.168.1.198:8000';
 
 // Production için
 // const API_URL = 'https://api.yourapp.com';

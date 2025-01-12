@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert, Platform } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert, Platform, ActivityIndicator } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -20,15 +20,13 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const passwordInputRef = useRef<TextInput>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   });
-
-  console.log(successMessage, 'successMessage1111');
-
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,7 +64,7 @@ export default function LoginScreen() {
     setEmailError(null);
     setPasswordError(null);
     setError(null);
-
+    setIsLoading(true);
     if (!email) {
       setEmailError('E-posta alanı boş bırakılamaz');
     }
@@ -80,9 +78,8 @@ export default function LoginScreen() {
     try {
       const response = await authApi.login({ email, password });
 
-      if (!response.data?.success || !response.success) {
-        console.log('response.data?.message', response.data?.message);
-        setError(response.data?.message || 'Giriş yapılamadı');
+      if (!response.data?.success) {
+        setError(response.error?.message || 'Giriş yapılamadı');
         return;
       }
 
@@ -92,14 +89,14 @@ export default function LoginScreen() {
       });
 
     } catch (error) {
-      console.error('Login error:', error);
-      setError('Bir hata oluştu');
+      setError('Sunucu bağlantısında hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async (accessToken: string) => {
     try {
-      console.log('Fetching user info with token:', accessToken);
       
       const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -203,7 +200,11 @@ export default function LoginScreen() {
           }}
           
         >
-          <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
+          )}
         </TouchableOpacity>
 
         <View style={styles.divider}>
