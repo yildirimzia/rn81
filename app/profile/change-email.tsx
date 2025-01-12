@@ -127,7 +127,6 @@ export default function ChangeEmailScreen() {
         formData.activationCode
       );
 
-      console.log(response, 'responseemaill');
 
       if (response.data?.success) {
         setSuccess(true);

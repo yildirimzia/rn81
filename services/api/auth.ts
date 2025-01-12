@@ -110,7 +110,6 @@ export const authApi = {
     },
 
     googleLogin: async (data: GoogleLoginRequest): Promise<ApiResponse<LoginResponse>> => {
-        console.log('Sending Google login request:', data);
         try {
             const response = await apiClient.post<LoginResponse>('google-login', data);
             return response;
@@ -139,7 +138,6 @@ export const authApi = {
     },
 
     verifyEmailChange: async (newEmail: string, activationCode: string): Promise<ApiResponse<any>> => {
-        console.log('Verifying email change:', { newEmail, activationCode });
         return apiClient.post('verify-email-change', {
             newEmail,
             activationCode: activationCode.toString()

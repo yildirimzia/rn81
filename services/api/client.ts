@@ -42,7 +42,6 @@ class ApiClient {
 
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
-            console.log('Using token:', this.token);
         }
 
         try {

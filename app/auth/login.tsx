@@ -45,17 +45,14 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (response?.type === 'success') {
-      console.log('Full Google response:', response);
       
       const accessToken = response.params.access_token;
       if (accessToken) {
         handleGoogleLogin(accessToken);
       } else {
-        console.log('No access token found in:', response.params);
         setError('Google girişi başarısız oldu: Token alınamadı');
       }
     } else if (response?.type === 'error') {
-      console.log('Google OAuth Error:', response.error);
       setError('Google girişi başarısız oldu: ' + response.error?.message);
     }
   }, [response]);
@@ -107,7 +104,6 @@ export default function LoginScreen() {
       }
       
       const userData = await userInfoResponse.json();
-      console.log('Google user data:', userData);
 
       const platform = Platform.select({
         ios: 'ios',

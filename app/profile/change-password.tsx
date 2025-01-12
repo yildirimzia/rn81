@@ -56,7 +56,6 @@ export default function ChangePasswordScreen() {
         });
         setSuccess(true);
       } else {
-        console.log(response.data, 'response.data');
         setError(response.data?.message || 'Şifre güncellenirken bir hata oluştu');
       }
     } catch (error: any) {

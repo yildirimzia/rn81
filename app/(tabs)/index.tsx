@@ -14,8 +14,6 @@ export default function HomeScreen() {
     return <Redirect href="/auth/login" />;
   }
 
-  console.log(user,'user');
-  console.log(isAuthenticated,'isAuthenticatedIndexxxx');
 
   return (
     <ParallaxScrollView

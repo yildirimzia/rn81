@@ -66,7 +66,6 @@ export default function VerifyEmailScreen() {
         activationToken: activationToken as string,
         code
       });
-      console.log('Verification response:', response);
 
       if (response?.data?.success) {
         await signIn({
@@ -98,13 +97,6 @@ export default function VerifyEmailScreen() {
       
       const userGender = params.gender || 'not_specified';
       
-      console.log('Resend params:', {
-        name: params.name,
-        email: email,
-        password: params.password,
-        gender: userGender
-      });
-
       const response = await authApi.register({ 
         name: params.name as string,
         email: email as string,

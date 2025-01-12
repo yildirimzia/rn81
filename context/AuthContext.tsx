@@ -41,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (data: { user: User; accessToken: string }) => {
     try {
-        console.log('Setting token:', data.accessToken); // Debug için
         apiClient.setToken(data.accessToken);
         updateState({
             user: data.user,
