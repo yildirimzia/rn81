@@ -110,6 +110,7 @@ export const authApi = {
     },
 
     googleLogin: async (data: GoogleLoginRequest): Promise<ApiResponse<LoginResponse>> => {
+        console.log('Sending Google login request:', data);
         try {
             const response = await apiClient.post<LoginResponse>('google-login', data);
             return response;
@@ -138,10 +139,19 @@ export const authApi = {
     },
 
     verifyEmailChange: async (newEmail: string, activationCode: string): Promise<ApiResponse<any>> => {
-        return apiClient.post('verify-email-change', {
-            newEmail,
-            activationCode: activationCode.toString()
-        });
+        try {
+            console.log('Gönderilen kod:', activationCode); // Debug için
+            const response = await apiClient.post('verify-email-change', {
+                newEmail,
+                activationCode: activationCode.toString() // String'e çevir
+            });
+            return response;
+        } catch (error: any) {
+            if (error.message?.includes('token')) {
+                throw new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            }
+            throw error;
+        }
     },
 
     updateUserAvatar: async (data: { avatar: string }): Promise<ApiResponse<{

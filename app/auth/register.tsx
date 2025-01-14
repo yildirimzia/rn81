@@ -123,7 +123,7 @@ export default function RegisterScreen() {
       <ThemedView style={styles.content}>
         <TouchableOpacity 
           style={styles.closeButton} 
-          onPress={() => router.back()}
+          onPress={() => router.push('/auth/login')}
         >
           <Ionicons name="close" size={24} color="#000" />
         </TouchableOpacity>
@@ -302,7 +302,9 @@ export default function RegisterScreen() {
 
           <View style={styles.footer}>
             <ThemedText>Zaten hesabınız var mı? </ThemedText>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => {
+              router.push('/auth/login');
+            }}>
               <ThemedText style={styles.link}>Giriş Yap</ThemedText>
             </TouchableOpacity>
           </View>

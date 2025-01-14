@@ -105,6 +105,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateState({ isInitialized: true });
   }, [updateState]);
 
+  useEffect(() => {
+    // Token'ı yenileme işlemi
+    const refreshTokenInterval = setInterval(async () => {
+      try {
+        if (state.isAuthenticated) {
+          const response = await authApi.refreshToken();
+          if (response?.data?.accessToken) {
+            apiClient.setToken(response.data.accessToken);
+          }
+        }
+      } catch (error) {
+        // Token yenileme başarısız olursa oturumu sonlandır
+        await signOut();
+      }
+    }, 4 * 60 * 1000); // 4 dakikada bir token yenile
+
+    return () => clearInterval(refreshTokenInterval);
+  }, [state.isAuthenticated, signOut]);
+
   const value = useMemo(() => ({
     isAuthenticated: state.isAuthenticated,
     user: state.user,

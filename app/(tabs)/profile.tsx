@@ -9,7 +9,7 @@ import { User as AuthUser } from '@/context/AuthContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { authApi } from '@/services/api/auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
 type MenuItemProps = {
@@ -36,9 +36,18 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? 'light'].tint;
 
+  if (!isAuthenticated || !user) {
+    useEffect(() => {
+      router.push('/auth/login');
+    }, []);
+    return null;
+  }
+
   const handleSignOut = async () => {
     await signOut();
-    router.push('/auth/login')
+    useEffect(() => {
+      router.push('/auth/login');
+    }, []);
   };
 
   const handleImagePick = async () => {
@@ -51,7 +60,7 @@ export default function ProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images" as ImagePicker.MediaType,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
@@ -79,11 +88,6 @@ export default function ProfileScreen() {
       setIsUploading(false);
     }
   };
-
-  if (!isAuthenticated || !user) {
-    router.push('/auth/login')
-    return null;
-  }
 
   const MenuItem = ({ icon, title, onPress, color = tintColor, danger = false }: MenuItemProps) => (
     <Pressable 

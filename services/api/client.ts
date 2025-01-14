@@ -53,12 +53,21 @@ class ApiClient {
                 body: config.body ? JSON.stringify(config.body) : undefined,
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'API request failed');
+            const data = await response.json();
+
+            // Aktivasyon token durumunu kontrol et
+            if (data.activationToken) {
+                return {
+                    success: true,
+                    data: data as T
+                };
             }
 
-            const data = await response.json();
+            // Normal response kontrolü
+            if (!response.ok) {
+                throw new Error(data.message || 'API request failed');
+            }
+
             return {
                 success: true,
                 data: data as T
