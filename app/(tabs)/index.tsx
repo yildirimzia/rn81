@@ -1,89 +1,293 @@
-import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, RefreshControl, SafeAreaView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { Redirect } from 'expo-router';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
 
 export default function HomeScreen() {
-  const { isAuthenticated, signOut, user } = useAuth();
+  const colorScheme = useColorScheme();
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (!isAuthenticated) {
-    return <Redirect href="/auth/login" />;
-  }
-
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // Yenileme işlemleri burada yapılacak
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hoş geldin, {user?.name}!</ThemedText>
-        <TouchableOpacity onPress={signOut}>
-          <ThemedText style={styles.logoutText}>Çıkış Yap</ThemedText>
-        </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={styles.container}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Header Section */}
+          <LinearGradient
+            colors={[Colors[colorScheme ?? 'light'].tint, '#4A90E2']}
+            style={styles.headerGradient}
+          >
+            <View style={styles.header}>
+              <ThemedText style={styles.welcomeText}>Bebeğinizi Ekleyin</ThemedText>
+              <ThemedText style={styles.headerSubtitle}>Gelişim takibine hemen başlayın</ThemedText>
+            </View>
+          </LinearGradient>
+
+          {/* Bebek Ekleme Seçenekleri */}
+          <View style={styles.babyOptionsContainer}>
+            {/* Tekil Bebek Kartları */}
+            <View style={styles.singleBabySection}>
+              <View style={styles.babyCardsContainer}>
+                <TouchableOpacity style={styles.babyCard}>
+                  <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(255, 182, 193, 0.1)' }]}>
+                    <MaterialIcons name="child-care" size={40} color="#FF69B4" />
+                  </View>
+                  <ThemedText style={styles.babyCardTitle}>Kız Bebek</ThemedText>
+                  <ThemedText style={styles.babyCardSubtitle}>Eklemek için dokunun</ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.babyCard}>
+                  <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(135, 206, 235, 0.1)' }]}>
+                    <MaterialIcons name="child-care" size={40} color="#4A90E2" />
+                  </View>
+                  <ThemedText style={styles.babyCardTitle}>Erkek Bebek</ThemedText>
+                  <ThemedText style={styles.babyCardSubtitle}>Eklemek için dokunun</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* İkiz Bebek Kartı */}
+            <View style={styles.twinBabySection}>
+              <TouchableOpacity style={styles.twinBabyCard}>
+                <View style={styles.twinIconsContainer}>
+                  <View style={[styles.twinIconWrapper, { backgroundColor: 'rgba(255, 182, 193, 0.1)' }]}>
+                    <MaterialIcons name="child-care" size={32} color="#FF69B4" />
+                  </View>
+                  <View style={[styles.twinIconWrapper, { backgroundColor: 'rgba(135, 206, 235, 0.1)' }]}>
+                    <MaterialIcons name="child-care" size={32} color="#4A90E2" />
+                  </View>
+                </View>
+                <ThemedText style={styles.twinCardTitle}>İkiz Bebek Ekle</ThemedText>
+                <ThemedText style={styles.twinCardSubtitle}>İkiz bebeklerinizi birlikte takip edin</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Gelişim Takibi Bölümü */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>Gelişim Takibi</ThemedText>
+            </View>
+            
+            <View style={styles.developmentList}>
+              <TouchableOpacity style={styles.developmentItem}>
+                <MaterialIcons name="straighten" size={24} color={Colors[colorScheme ?? 'light'].tint} />
+                <View style={styles.developmentContent}>
+                  <ThemedText style={styles.developmentTitle}>Boy & Kilo Takibi</ThemedText>
+                  <ThemedText style={styles.developmentSubtitle}>Bebeğinizin büyüme grafiği</ThemedText>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#999" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.developmentItem}>
+                <MaterialIcons name="event" size={24} color={Colors[colorScheme ?? 'light'].tint} />
+                <View style={styles.developmentContent}>
+                  <ThemedText style={styles.developmentTitle}>Aşı Takvimi</ThemedText>
+                  <ThemedText style={styles.developmentSubtitle}>Aşı zamanlarını takip edin</ThemedText>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#999" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.developmentItem}>
+                <MaterialIcons name="menu-book" size={24} color={Colors[colorScheme ?? 'light'].tint} />
+                <View style={styles.developmentContent}>
+                  <ThemedText style={styles.developmentTitle}>Gelişim Rehberi</ThemedText>
+                  <ThemedText style={styles.developmentSubtitle}>Aylık gelişim bilgileri</ThemedText>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#999" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+        </ScrollView>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.light.tint,
+  },
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  header: {
+    paddingHorizontal: 20,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: '#FFF',
+    opacity: 0.9,
+  },
+  babyOptionsContainer: {
+    marginTop: 20,
+    padding: 16,
+    gap: 20,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8,
+    marginLeft: 4,
+    letterSpacing: 0.5,
+  },
+  singleBabySection: {
+    gap: 8,
+  },
+  babyCardsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  twinBabySection: {
+    gap: 8,
+  },
+  babyCard: {
+    flex: 1,
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  babyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  babyCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  babyCardSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  twinBabyCard: {
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  twinIconsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  twinIconWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  twinCardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  twinCardSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+  },
+  section: {
+    padding: 16,
+    marginTop: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  developmentList: {
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: 16,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  developmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  developmentContent: {
+    flex: 1,
+    marginLeft: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  developmentTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  logoutText: {
-    color: 'red',
-    marginLeft: 10,
+  developmentSubtitle: {
+    fontSize: 13,
+    color: '#666',
   },
 });
