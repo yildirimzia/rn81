@@ -37,8 +37,6 @@ export default function AddVaccineScreen() {
   const [showVaccinePicker, setShowVaccinePicker] = useState(false);
   const [showBabyPicker, setShowBabyPicker] = useState(false);
 
-  console.log('Babies:', babies);
-  console.log('Selected Baby ID:', selectedBabyId);
 
   const selectedBaby = babies.find(b => b.id === selectedBabyId);
 

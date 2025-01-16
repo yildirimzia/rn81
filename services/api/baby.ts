@@ -58,6 +58,7 @@ export const babyApi = {
 
     getBabies: async () => {
         const response = await apiClient.get<IBabyResponse>('list');
+        console.log('API Response in service:', response);
         return response;
     },
 

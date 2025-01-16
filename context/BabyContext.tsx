@@ -10,6 +10,11 @@ interface Baby {
   weight: number;
   height: number;
   photo?: { url: string };
+  vaccine_information?: {
+    vaccine_name: string;
+    vaccine_date: Date;
+    vaccine_notes?: string;
+  }[];
 }
 
 interface BabyContextType {
@@ -39,19 +44,35 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await babyApi.getBabies();
-      
+
       if (response.data?.success) {
-        const mappedBabies = response.data.babies.map((baby) => ({
-          id: baby._id,
-          name: baby.name,
-          birthDate: new Date(baby.birthDate),
-          gender: baby.gender,
-          weight: baby.weight,
-          height: baby.height,
-          photo: baby.photo
-        }));
-        
+        const mappedBabies = response.data.babies.map((baby: any) => {
+          return {
+            id: baby._id,
+            name: baby.name,
+            birthDate: new Date(baby.birthDate),
+            gender: baby.gender,
+            weight: baby.weight,
+            height: baby.height,
+            photo: baby.photo,
+            vaccine_information: baby.vaccine_information || []
+          };
+        });
+
         setBabies(mappedBabies);
+
+        // Aşı bilgisi olan bebeği seçelim
+        const babyWithVaccines = mappedBabies.find(baby => 
+          baby.vaccine_information && baby.vaccine_information.length > 0
+        );
+
+        if (babyWithVaccines) {
+          console.log('Setting baby with vaccines:', babyWithVaccines);
+          setSelectedBaby(babyWithVaccines);
+        } else if (mappedBabies.length > 0) {
+          console.log('No baby with vaccines found, setting first baby');
+          setSelectedBaby(mappedBabies[0]);
+        }
       }
     } catch (error) {
       console.error('Error fetching babies:', error);
