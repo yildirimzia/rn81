@@ -32,6 +32,7 @@ interface BabyContextType {
   fetchBabies: () => Promise<void>;
   loading: boolean;
   deleteVaccine: (babyId: string, vaccineId: string) => Promise<void>;
+  deleteAllergy: (babyId: string, allergyId: string) => Promise<void>;
 }
 
 const BabyContext = createContext<BabyContextType>({
@@ -42,6 +43,7 @@ const BabyContext = createContext<BabyContextType>({
   fetchBabies: async () => {},
   loading: false,
   deleteVaccine: async () => {},
+  deleteAllergy: async () => {},
 });
 
 export function BabyProvider({ children }: { children: ReactNode }) {
@@ -97,6 +99,21 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteAllergy = async (babyId: string, allergyId: string) => {
+    try {
+      setLoading(true);
+      const response = await babyApi.deleteAllergy(babyId, allergyId);
+      if (response.success) {
+        await fetchBabies();
+      }
+    } catch (error) {
+      console.error('Error deleting allergy:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchBabies();
   }, []);
@@ -109,11 +126,14 @@ export function BabyProvider({ children }: { children: ReactNode }) {
       setSelectedBaby,
       fetchBabies,
       loading,
-      deleteVaccine
+      deleteVaccine,
+      deleteAllergy
     }}>
       {children}
     </BabyContext.Provider>
   );
 }
+
+
 
 export const useBabyContext = () => useContext(BabyContext);

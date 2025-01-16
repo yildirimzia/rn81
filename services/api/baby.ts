@@ -116,4 +116,13 @@ export const babyApi = {
         }
         return response.data;
     },
+    deleteAllergy: async (babyId: string, allergyId: string) => {
+        const response = await apiClient.delete<AllergyApiResponse>(
+            `${babyId}/delete-allergy/${allergyId}`
+        );
+        if (!response.data) {
+            throw new Error('Response data is undefined');
+        }
+        return response.data;
+    },
 }; 

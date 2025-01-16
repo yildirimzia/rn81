@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -8,8 +8,39 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useBabyContext } from '@/context/BabyContext';
 
+const formatName = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export default function AllergyTrackerScreen() {
-  const { babies } = useBabyContext();
+  const { babies, deleteAllergy } = useBabyContext();
+
+  const handleDeletePress = (babyId: string, allergyId: string) => {
+    Alert.alert(
+      "Alerji Kaydını Sil",
+      "Bu alerji kaydını silmek istediğinizden emin misiniz?",
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Sil",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAllergy(babyId, allergyId);
+            } catch (error) {
+              Alert.alert('Hata', 'Alerji kaydı silinirken bir hata oluştu');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -30,7 +61,7 @@ export default function AllergyTrackerScreen() {
                   />
                 </View>
                 <View style={styles.babyInfo}>
-                  <ThemedText style={styles.babyName}>{baby.name}</ThemedText>
+                  <ThemedText style={styles.babyName}>{formatName(baby.name)}</ThemedText>
                   <View style={styles.badgeContainer}>
                     <View style={styles.badge}>
                       <MaterialIcons name="healing" size={16} color="#FFF" />
@@ -75,6 +106,12 @@ export default function AllergyTrackerScreen() {
                             </ThemedText>
                           </View>
                         )}
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => handleDeletePress(baby.id, allergy._id)}
+                        >
+                          <MaterialIcons name="delete-outline" size={24} color={genderColor} />
+                        </TouchableOpacity>
                       </View>
                     ))}
                   </View>
@@ -249,5 +286,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 8,
     flex: 1,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 8,
+    borderRadius: 8,
   },
 }); 
