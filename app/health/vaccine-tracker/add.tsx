@@ -27,7 +27,7 @@ const commonVaccines = [
 ];
 
 export default function AddVaccineScreen() {
-  const { babies, loading } = useBabyContext();
+  const { babies, loading, fetchBabies } = useBabyContext();
   const [selectedBabyId, setSelectedBabyId] = useState('');
   const [selectedVaccine, setSelectedVaccine] = useState('');
   const [customVaccine, setCustomVaccine] = useState('');
@@ -36,12 +36,16 @@ export default function AddVaccineScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showVaccinePicker, setShowVaccinePicker] = useState(false);
   const [showBabyPicker, setShowBabyPicker] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
 
   const selectedBaby = babies.find(b => b.id === selectedBabyId);
 
   const handleSave = async () => {
     try {
+      if (isSaving) return;
+      setIsSaving(true);
+
       if (!selectedBabyId) {
         Alert.alert('Hata', 'Lütfen bir bebek seçin');
         return;
@@ -66,6 +70,7 @@ export default function AddVaccineScreen() {
       const response = await babyApi.addVaccine(selectedBabyId, vaccineData);
 
       if (response.success) {
+        await fetchBabies();
         Alert.alert('Başarılı', 'Aşı bilgisi eklendi', [
           { text: 'Tamam', onPress: () => router.back() }
         ]);
@@ -74,26 +79,8 @@ export default function AddVaccineScreen() {
       }
     } catch (error: any) {
       Alert.alert('Hata', error.message || 'Aşı eklenirken bir hata oluştu');
-    }
-  };
-
-  const openBabyPicker = () => {
-    if (Platform.OS === 'ios') {
-      const options = ['İptal', ...babies.map(baby => baby.name)];
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options,
-          cancelButtonIndex: 0,
-          title: 'Bebek Seçin',
-        },
-        (buttonIndex) => {
-          if (buttonIndex !== 0) { // İptal değilse
-            setSelectedBabyId(babies[buttonIndex - 1].id);
-          }
-        }
-      );
-    } else {
-      setShowBabyPicker(true);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -322,14 +309,21 @@ export default function AddVaccineScreen() {
       <TouchableOpacity 
         style={[
           styles.saveButton,
-          (!selectedBabyId || !selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)) && 
-          styles.saveButtonDisabled
+          (isSaving || !selectedBabyId || !selectedVaccine || 
+          (selectedVaccine === 'Diğer' && !customVaccine)) && styles.saveButtonDisabled
         ]}
         onPress={handleSave}
-        disabled={!selectedBabyId || !selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)}
+        disabled={isSaving || !selectedBabyId || !selectedVaccine || 
+          (selectedVaccine === 'Diğer' && !customVaccine)}
       >
-        <MaterialIcons name="check" size={24} color="#fff" />
-        <ThemedText style={styles.saveButtonText}>Kaydet</ThemedText>
+        {isSaving ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <>
+            <MaterialIcons name="check" size={24} color="#fff" />
+            <ThemedText style={styles.saveButtonText}>Kaydet</ThemedText>
+          </>
+        )}
       </TouchableOpacity>
     </ThemedView>
   );

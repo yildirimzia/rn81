@@ -5,6 +5,13 @@ interface PhotoType {
 }
 
 interface VaccineInfo {
+    _id: string;
+    vaccine_name: string;
+    vaccine_date: Date;
+    vaccine_notes?: string;
+}
+
+interface AddVaccineData {
     vaccine_name: string;
     vaccine_date: Date;
     vaccine_notes?: string;
@@ -69,7 +76,7 @@ export const babyApi = {
     deleteBaby: (id: string) => {
         return apiClient.delete<BabyApiResponse>(`${id}`);
     },
-    addVaccine: async (babyId: string, vaccineData: VaccineInfo): Promise<VaccineApiResponse> => {
+    addVaccine: async (babyId: string, vaccineData: AddVaccineData): Promise<VaccineApiResponse> => {
         const response = await apiClient.post<VaccineApiResponse>(`${babyId}/add-vaccine`, vaccineData);
 
         if (!response.data) {
@@ -77,5 +84,14 @@ export const babyApi = {
         }
 
         return response.data;
-    }
+    },
+    deleteVaccine: async (babyId: string, vaccineId: string) => {
+        const response = await apiClient.delete<VaccineApiResponse>(
+            `${babyId}/delete-vaccine/${vaccineId}`
+        );
+        if (!response.data) {
+            throw new Error('Response data is undefined');
+        }
+        return response.data;
+    },
 }; 

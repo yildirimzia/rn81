@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -17,7 +17,31 @@ const formatName = (name: string) => {
 };
 
 export default function VaccineTrackerScreen() {
-  const { babies } = useBabyContext();
+  const { babies, deleteVaccine } = useBabyContext();
+
+  const handleDeletePress = (babyId: string, vaccineId: string) => {
+    Alert.alert(
+      "Aşı Kaydını Sil",
+      "Bu aşı kaydını silmek istediğinizden emin misiniz?",
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Sil",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteVaccine(babyId, vaccineId);
+            } catch (error) {
+              Alert.alert('Hata', 'Aşı kaydı silinirken bir hata oluştu');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -74,6 +98,12 @@ export default function VaccineTrackerScreen() {
                               {format(new Date(vaccine.vaccine_date), 'd MMMM yyyy', { locale: tr })}
                             </ThemedText>
                           </View>
+                          <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => handleDeletePress(baby.id, vaccine._id)}
+                          >
+                            <MaterialIcons name="delete-outline" size={24} color={genderColor} />
+                          </TouchableOpacity>
                         </View>
                         {vaccine.vaccine_notes && (
                           <View style={styles.noteContainer}>
@@ -95,7 +125,9 @@ export default function VaccineTrackerScreen() {
 
       <TouchableOpacity 
         style={styles.addButton}
-        onPress={() => router.push('/health/vaccine-tracker/add')}
+        onPress={() => router.push({
+          pathname: "/health/vaccine-tracker/add"
+        } as any)}
       >
         <MaterialIcons name="add" size={24} color="#fff" />
         <ThemedText style={styles.addButtonText}>Aşı Ekle</ThemedText>
@@ -259,5 +291,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  deleteButton: {
+    padding: 8,
+    marginLeft: 'auto',
   },
 }); 
