@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Pressable, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, Image, Alert, ActivityIndicator, Dimensions, TouchableOpacity, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -11,6 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { authApi } from '@/services/api/auth';
 import { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as StoreReview from 'expo-store-review';
 
 type MenuItemProps = {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -180,6 +181,46 @@ export default function ProfileScreen() {
               danger
             />
           </View>
+
+          <View style={styles.ratingContainer}>
+            <View style={styles.ratingContent}>
+              <View style={styles.ratingIconContainer}>
+                <MaterialIcons name="star" size={32} color="#FFD700" />
+              </View>
+              <View style={styles.ratingTextContainer}>
+                <ThemedText style={styles.ratingTitle}>Uygulamayı Değerlendirin</ThemedText>
+                <ThemedText style={styles.ratingSubtitle}>
+                  Uygulamayı beğendiyseniz değerlendirmeyi unutmayın
+                </ThemedText>
+              </View>
+            </View>
+            <View style={styles.ratingButtonsContainer}>
+              <TouchableOpacity 
+                style={[styles.ratingButton, styles.ratingButtonOutline]} 
+                onPress={async () => {
+                  if (await StoreReview.hasAction()) {
+                    await StoreReview.requestReview();
+                  }
+                }}
+              >
+                <MaterialIcons name="star-outline" size={24} color={Colors[colorScheme ?? 'light'].tint} />
+                <ThemedText style={styles.ratingButtonText}>Uygulamaya Not Verin</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.ratingButton, styles.ratingButtonFilled]}
+                onPress={() => {
+                  Share.share({
+                    message: 'Bu uygulamayı çok beğendim, siz de denemelisiniz!',
+                    url: 'https://your-app-store-link.com', // App Store/Play Store linkiniz
+                    title: 'Harika bir uygulama!'
+                  });
+                }}
+              >
+                <MaterialIcons name="share" size={24} color="#FFF" />
+                <ThemedText style={styles.ratingButtonFilledText}>Uygulamayı Tavsiye Edin</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </ThemedView>
@@ -286,5 +327,75 @@ const styles = StyleSheet.create({
   },
   dangerText: {
     color: Colors.danger,
+  },
+  ratingContainer: {
+    backgroundColor: Colors.light.cardBackground,
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  ratingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  ratingIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  ratingTextContainer: {
+    flex: 1,
+  },
+  ratingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  ratingSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+  ratingButtonsContainer: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  ratingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  ratingButtonOutline: {
+    borderWidth: 1,
+    borderColor: Colors.light.tint,
+  },
+  ratingButtonFilled: {
+    backgroundColor: Colors.light.tint,
+  },
+  ratingButtonText: {
+    fontSize: 14,
+    color: Colors.light.tint,
+    fontWeight: '500',
+  },
+  ratingButtonFilledText: {
+    fontSize: 14,
+    color: '#FFF',
+    fontWeight: '500',
   },
 });
