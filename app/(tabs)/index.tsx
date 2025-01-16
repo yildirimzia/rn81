@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -112,12 +113,12 @@ export default function HomeScreen() {
 
               <TouchableOpacity 
                 style={styles.developmentItem}
-                onPress={() => router.push('/vaccine-tracker')}
+                onPress={() => router.push('/health')}
               >
                 <MaterialIcons name="event" size={24} color={Colors[colorScheme ?? 'light'].tint} />
                 <View style={styles.developmentContent}>
-                  <ThemedText style={styles.developmentTitle}>Aşı Takibi</ThemedText>
-                  <ThemedText style={styles.developmentSubtitle}>Bebeğinizin aşı kayıtları</ThemedText>
+                  <ThemedText style={styles.developmentTitle}>Sağlık Takibi</ThemedText>
+                  <ThemedText style={styles.developmentSubtitle}>Bebeğinizin sağlık kayıtları</ThemedText>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#999" />
               </TouchableOpacity>

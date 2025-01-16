@@ -49,7 +49,7 @@ export default function VaccineTrackerScreen() {
 
       <TouchableOpacity 
         style={styles.addButton}
-        onPress={() => router.push('/vaccine-tracker/add')}
+        onPress={() => router.push('/health/vaccine-tracker/add')}
       >
         <MaterialIcons name="add" size={24} color="#fff" />
         <ThemedText style={styles.addButtonText}>Aşı Ekle</ThemedText>
