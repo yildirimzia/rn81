@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Platform, ActivityIndicator, Modal, ActionSheetIOS } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Platform, ActivityIndicator, Modal, ActionSheetIOS, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -10,7 +10,7 @@ import { Picker } from '@react-native-picker/picker';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useBabyContext } from '@/context/BabyContext';
-import { vaccineApi } from '@/services/api/vaccine';
+import { babyApi } from '@/services/api/baby';
 
 const commonVaccines = [
   'Diğer',
@@ -43,25 +43,39 @@ export default function AddVaccineScreen() {
   const selectedBaby = babies.find(b => b.id === selectedBabyId);
 
   const handleSave = async () => {
-    if (!selectedBabyId) {
-      // Hata göster: Bebek seçilmedi
-      return;
-    }
-
     try {
+      if (!selectedBabyId) {
+        Alert.alert('Hata', 'Lütfen bir bebek seçin');
+        return;
+      }
+
+      if (!selectedVaccine) {
+        Alert.alert('Hata', 'Lütfen bir aşı seçin');
+        return;
+      }
+
+      if (selectedVaccine === 'Diğer' && !customVaccine) {
+        Alert.alert('Hata', 'Lütfen özel aşı ismini girin');
+        return;
+      }
+
       const vaccineData = {
-        babyId: selectedBabyId,
-        name: selectedVaccine === 'Diğer' ? customVaccine : selectedVaccine,
-        date: selectedDate,
-        note: note
+        vaccine_name: selectedVaccine === 'Diğer' ? customVaccine : selectedVaccine,
+        vaccine_date: selectedDate,
+        vaccine_notes: note || undefined
       };
 
-      const response = await vaccineApi.createVaccine(vaccineData);
-      if (response.data?.success) {
-        router.back();
+      const response = await babyApi.addVaccine(selectedBabyId, vaccineData);
+
+      if (response.success) {
+        Alert.alert('Başarılı', 'Aşı bilgisi eklendi', [
+          { text: 'Tamam', onPress: () => router.back() }
+        ]);
+      } else {
+        Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
       }
-    } catch (error) {
-      console.error('Aşı kaydedilemedi:', error);
+    } catch (error: any) {
+      Alert.alert('Hata', error.message || 'Aşı eklenirken bir hata oluştu');
     }
   };
 
