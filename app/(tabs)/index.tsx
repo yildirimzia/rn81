@@ -110,11 +110,14 @@ export default function HomeScreen() {
                 <MaterialIcons name="chevron-right" size={24} color="#999" />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.developmentItem}>
+              <TouchableOpacity 
+                style={styles.developmentItem}
+                onPress={() => router.push('/vaccine-tracker')}
+              >
                 <MaterialIcons name="event" size={24} color={Colors[colorScheme ?? 'light'].tint} />
                 <View style={styles.developmentContent}>
-                  <ThemedText style={styles.developmentTitle}>Aşı Takvimi</ThemedText>
-                  <ThemedText style={styles.developmentSubtitle}>Aşı zamanlarını takip edin</ThemedText>
+                  <ThemedText style={styles.developmentTitle}>Aşı Takibi</ThemedText>
+                  <ThemedText style={styles.developmentSubtitle}>Bebeğinizin aşı kayıtları</ThemedText>
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#999" />
               </TouchableOpacity>
