@@ -17,6 +17,21 @@ interface AddVaccineData {
     vaccine_notes?: string;
 }
 
+interface AllergyInfo {
+    allergy_name: string;
+    discovery_date: Date;
+    symptoms?: string;
+}
+
+interface AllergyApiResponse {
+    success: boolean;
+    message?: string;
+    allergy?: any;
+    error?: {
+        message: string;
+    };
+}
+
 export interface IBabyData {
     id?: string;
     name: string;
@@ -89,6 +104,13 @@ export const babyApi = {
         const response = await apiClient.delete<VaccineApiResponse>(
             `${babyId}/delete-vaccine/${vaccineId}`
         );
+        if (!response.data) {
+            throw new Error('Response data is undefined');
+        }
+        return response.data;
+    },
+    addAllergy: async (babyId: string, allergyData: AllergyInfo): Promise<AllergyApiResponse> => {
+        const response = await apiClient.post<AllergyApiResponse>(`${babyId}/add-allergy`, allergyData);
         if (!response.data) {
             throw new Error('Response data is undefined');
         }

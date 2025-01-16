@@ -16,6 +16,12 @@ interface Baby {
     vaccine_date: Date;
     vaccine_notes?: string;
   }[];
+  allergy_information?: {
+    _id: string;
+    allergy_name: string;
+    discovery_date: Date;
+    symptoms?: string;
+  }[];
 }
 
 interface BabyContextType {
@@ -58,22 +64,14 @@ export function BabyProvider({ children }: { children: ReactNode }) {
             weight: baby.weight,
             height: baby.height,
             photo: baby.photo,
-            vaccine_information: baby.vaccine_information || []
+            vaccine_information: baby.vaccine_information || [],
+            allergy_information: baby.allergy_information || []
           };
         });
 
         setBabies(mappedBabies);
 
-        // Aşı bilgisi olan bebeği seçelim
-        const babyWithVaccines = mappedBabies.find(baby => 
-          baby.vaccine_information && baby.vaccine_information.length > 0
-        );
-
-        if (babyWithVaccines) {
-          console.log('Setting baby with vaccines:', babyWithVaccines);
-          setSelectedBaby(babyWithVaccines);
-        } else if (mappedBabies.length > 0) {
-          console.log('No baby with vaccines found, setting first baby');
+        if (mappedBabies.length > 0) {
           setSelectedBaby(mappedBabies[0]);
         }
       }

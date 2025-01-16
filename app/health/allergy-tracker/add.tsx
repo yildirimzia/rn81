@@ -12,25 +12,34 @@ import { tr } from 'date-fns/locale';
 import { useBabyContext } from '@/context/BabyContext';
 import { babyApi } from '@/services/api/baby';
 
-const commonVaccines = [
+const commonAllergies = [
   'Diğer',
-  'BCG',
-  'Hepatit B',
-  'DaBT-İPA-Hib',
-  'KPA',
-  'OPA',
-  'Rota',
-  'KKK',
-  'Suçiçeği',
-  'Hepatit A',
-
+  'Süt',
+  'Yumurta',
+  'Fıstık',
+  'Kuruyemiş',
+  'Buğday',
+  'Soya',
+  'Balık',
+  'Kabuklu Deniz Ürünleri',
+  'Mısır',
+  'Peynir',
+  'Çikolata',
+  'Bal',
+  'Domates',
+  'Çilek',
+  'Kivi',
+  'Portakal',
+  'Limon',
+  'Gluten',
+  'Susam'
 ];
 
-export default function AddVaccineScreen() {
-  const { babies, loading } = useBabyContext();
+export default function AddAllergyScreen() {
+  const { babies, fetchBabies, loading } = useBabyContext();
   const [selectedBabyId, setSelectedBabyId] = useState('');
-  const [selectedVaccine, setSelectedVaccine] = useState('');
-  const [customVaccine, setCustomVaccine] = useState('');
+  const [selectedAllergy, setSelectedAllergy] = useState('');
+  const [customAllergy, setCustomAllergy] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -51,33 +60,34 @@ export default function AddVaccineScreen() {
         return;
       }
 
-      if (!selectedVaccine) {
-        Alert.alert('Hata', 'Lütfen bir aşı seçin');
+      if (!selectedAllergy) {
+        Alert.alert('Hata', 'Lütfen bir Alerji seçin');
         return;
       }
 
-      if (selectedVaccine === 'Diğer' && !customVaccine) {
-        Alert.alert('Hata', 'Lütfen özel aşı ismini girin');
+      if (selectedAllergy === 'Diğer' && !customAllergy) {
+        Alert.alert('Hata', 'Lütfen özel Alerji ismini girin');
         return;
       }
 
-      const vaccineData = {
-        vaccine_name: selectedVaccine === 'Diğer' ? customVaccine : selectedVaccine,
-        vaccine_date: selectedDate,
-        vaccine_notes: note || undefined
+      const allergyData = {
+        allergy_name: selectedAllergy === 'Diğer' ? customAllergy : selectedAllergy,
+        discovery_date: selectedDate,
+        symptoms: note || undefined
       };
 
-      const response = await babyApi.addVaccine(selectedBabyId, vaccineData);
+      const response = await babyApi.addAllergy(selectedBabyId, allergyData);
 
       if (response.success) {
-        Alert.alert('Başarılı', 'Aşı bilgisi eklendi', [
+        await fetchBabies();
+        Alert.alert('Başarılı', 'Alerji bilgisi eklendi', [
           { text: 'Tamam', onPress: () => router.back() }
         ]);
       } else {
         Alert.alert('Hata', response.error?.message || 'Bir hata oluştu');
       }
     } catch (error: any) {
-      Alert.alert('Hata', error.message || 'Aşı eklenirken bir hata oluştu');
+      Alert.alert('Hata', error.message || 'Alerji eklenirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }
@@ -167,18 +177,18 @@ export default function AddVaccineScreen() {
           </View>
           
 
-          {/* Aşı Seçimi */}
+          {/* Alerji Seçimi */}
           <View style={styles.formGroup}>
-            <ThemedText style={styles.label}>Aşı İsmi</ThemedText>
+            <ThemedText style={styles.label}>Alerji İsmi</ThemedText>
             <TouchableOpacity 
               onPress={() => setShowVaccinePicker(true)}
               style={styles.pickerButton}
             >
               <ThemedText style={[
                 styles.pickerButtonText,
-                !selectedVaccine && styles.placeholderText
+                !selectedAllergy && styles.placeholderText
               ]}>
-                {selectedVaccine || "Aşı Seçin"}
+                {selectedAllergy || "Alerji Seçin"}
               </ThemedText>
               <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
             </TouchableOpacity>
@@ -186,18 +196,18 @@ export default function AddVaccineScreen() {
             {showVaccinePicker && Platform.OS === 'ios' && (
               <View style={styles.pickerContainer}>
                 <Picker
-                  selectedValue={selectedVaccine}
+                  selectedValue={selectedAllergy}
                   onValueChange={(itemValue) => {
-                    setSelectedVaccine(itemValue);
+                    setSelectedAllergy(itemValue);
                   }}
                   style={styles.picker}
                 >
-                  <Picker.Item key="default" label="Aşı Seçin" value="" />
-                  {commonVaccines.map(vaccine => (
+                  <Picker.Item key="default" label="Alerji Seçin" value="" />
+                  {commonAllergies.map(allergy => (
                     <Picker.Item 
-                      key={`vaccine-${vaccine}`}
-                      label={vaccine} 
-                      value={vaccine}
+                      key={`allergy-${allergy}`}
+                      label={allergy} 
+                      value={allergy}
                     />
                   ))}
                 </Picker>
@@ -212,15 +222,15 @@ export default function AddVaccineScreen() {
 
             {showVaccinePicker && Platform.OS === 'android' && (
               <Picker
-                selectedValue={selectedVaccine}
+                selectedValue={selectedAllergy}
                 onValueChange={(itemValue) => {
-                  setSelectedVaccine(itemValue);
+                  setSelectedAllergy(itemValue);
                   setShowVaccinePicker(false);
                 }}
                 style={styles.androidPicker}
               >
-                <Picker.Item label="Aşı Seçin" value="" />
-                {commonVaccines.map(vaccine => (
+                <Picker.Item label="Alerji Seçin" value="" />
+                {commonAllergies.map(vaccine => (
                   <Picker.Item 
                     key={vaccine} 
                     label={vaccine} 
@@ -231,23 +241,23 @@ export default function AddVaccineScreen() {
             )}
           </View>
 
-          {/* Özel Aşı İsmi */}
-          {selectedVaccine === 'Diğer' && (
+          {/* Özel Alerji İsmi */}
+          {selectedAllergy === 'Diğer' && (
             <View style={styles.formGroup}>
-              <ThemedText style={styles.label}>Özel Aşı İsmi</ThemedText>
+              <ThemedText style={styles.label}>Özel Alerji İsmi</ThemedText>
               <TextInput
                 style={styles.input}
-                value={customVaccine}
-                onChangeText={setCustomVaccine}
-                placeholder="Aşı ismini girin"
+                value={customAllergy}
+                onChangeText={setCustomAllergy}
+                placeholder="Alerji ismini girin"
                 placeholderTextColor="#999"
               />
             </View>
           )}
 
-          {/* Tarih Seçimi */}
+          {/* Keşfedilme Tarihi Seçimi */}
           <View style={styles.formGroup}>
-            <ThemedText style={styles.label}>Tarih</ThemedText>
+            <ThemedText style={styles.label}>Keşfedilme Tarihi</ThemedText>
             <TouchableOpacity 
               style={styles.dateButton}
               onPress={() => setShowDatePicker(true)}
@@ -296,7 +306,7 @@ export default function AddVaccineScreen() {
               style={[styles.input, styles.textArea]}
               value={note}
               onChangeText={setNote}
-              placeholder="Aşı ile ilgili not ekleyin"
+              placeholder="Alerji ile ilgili Belirtiler ekleyin"
               placeholderTextColor="#999"
               multiline
               numberOfLines={4}
@@ -308,12 +318,12 @@ export default function AddVaccineScreen() {
       <TouchableOpacity 
         style={[
           styles.saveButton,
-          (isSaving || !selectedBabyId || !selectedVaccine || 
-          (selectedVaccine === 'Diğer' && !customVaccine)) && styles.saveButtonDisabled
+          (isSaving || !selectedBabyId || !selectedAllergy || 
+          (selectedAllergy === 'Diğer' && !customAllergy)) && styles.saveButtonDisabled
         ]}
         onPress={handleSave}
-        disabled={isSaving || !selectedBabyId || !selectedVaccine || 
-          (selectedVaccine === 'Diğer' && !customVaccine)}
+        disabled={isSaving || !selectedBabyId || !selectedAllergy || 
+          (selectedAllergy === 'Diğer' && !customAllergy)}
       >
         {isSaving ? (
           <ActivityIndicator color="#fff" size="small" />

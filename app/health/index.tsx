@@ -1,6 +1,6 @@
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -8,32 +8,52 @@ const healthCategories = [
   {
     id: 'vaccines',
     title: 'Aşı Takibi',
-    icon: 'medical-services' as const, // icon type hatası için as const ekledik
-    description: 'Aşı kayıtları ve takibi',
-    route: '/health/vaccine-tracker'
+    description: 'Aşı kayıtlarını görüntüle ve yönet',
+    icon: 'vaccines' as const,
+    route: '/health/vaccine-tracker',
+    color: '#4A90E2',
+    bgColor: '#E3F2FD'
   },
-  // Diğer kategoriler daha sonra eklenebilir
+  {
+    id: 'allergies',
+    title: 'Alerji Takibi',
+    description: 'Alerjileri ve reaksiyonları kaydet',
+    icon: 'healing' as const,
+    route: '/health/allergy-tracker',
+    color: '#FF5252',
+    bgColor: '#FFEBEE'
+  }
 ];
 
 export default function HealthScreen() {
   return (
     <ThemedView style={styles.container}>
-      {healthCategories.map((category) => (
-        <TouchableOpacity
-          key={category.id}
-          style={styles.card}
-          onPress={() => router.push(category.route)}
-        >
-          <View style={styles.iconContainer}>
-            <MaterialIcons name={category.icon} size={32} color="#4CAF50" />
-          </View>
-          <View style={styles.textContainer}>
-            <ThemedText style={styles.title}>{category.title}</ThemedText>
-            <ThemedText style={styles.description}>{category.description}</ThemedText>
-          </View>
-          <MaterialIcons name="chevron-right" size={24} color="#666" />
-        </TouchableOpacity>
-      ))}
+      <View style={styles.header}>
+        <ThemedText style={styles.headerTitle}>Sağlık Takibi</ThemedText>
+        <ThemedText style={styles.headerSubtitle}>
+          Bebeğinizin sağlık kayıtlarını kolayca yönetin
+        </ThemedText>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.grid}>
+          {healthCategories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[styles.card, { backgroundColor: category.bgColor }]}
+              onPress={() => router.push(category.route as any)}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: category.color }]}>
+                <MaterialIcons name={category.icon} size={32} color="#FFF" />
+              </View>
+              <ThemedText style={styles.cardTitle}>{category.title}</ThemedText>
+              <ThemedText style={styles.cardDescription}>
+                {category.description}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -41,15 +61,39 @@ export default function HealthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    padding: 20,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  content: {
+    flex: 1,
     padding: 16,
   },
-  card: {
+  grid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  card: {
+    width: '47%',
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: 20,
+    marginBottom: 8,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -60,24 +104,22 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#E8F5E9',
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginBottom: 12,
   },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
+  cardTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 4,
+    color: '#333',
+    marginBottom: 8,
   },
-  description: {
+  cardDescription: {
     fontSize: 14,
     color: '#666',
+    lineHeight: 20,
   },
 });

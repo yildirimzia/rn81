@@ -53,6 +53,39 @@ export default function HealthLayout() {
           )
         }}
       />
+      <Stack.Screen 
+        name="allergy-tracker/index"
+        options={{
+          title: 'Alerji Takibi',
+          headerShadowVisible: false,
+          headerBackTitle: 'Sağlık',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
+      <Stack.Screen 
+        name="allergy-tracker/add"
+        options={{
+          title: 'Alerji Ekle',
+          headerShadowVisible: false,
+          presentation: 'modal',
+          headerBackTitle: 'Geri',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
     </Stack>
   );
 } 
