@@ -8,10 +8,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const { isAuthenticated, signOut, user } = useAuth();
 
@@ -51,7 +53,10 @@ export default function HomeScreen() {
             {/* Tekil Bebek Kartları */}
             <View style={styles.singleBabySection}>
               <View style={styles.babyCardsContainer}>
-                <TouchableOpacity style={styles.babyCard}>
+                <TouchableOpacity 
+                  style={styles.babyCard}
+                  onPress={() => router.push('/baby/female/add' as any)}
+                >
                   <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(255, 182, 193, 0.1)' }]}>
                     <MaterialIcons name="child-care" size={40} color="#FF69B4" />
                   </View>
@@ -59,7 +64,10 @@ export default function HomeScreen() {
                   <ThemedText style={styles.babyCardSubtitle}>Eklemek için dokunun</ThemedText>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.babyCard}>
+                <TouchableOpacity 
+                  style={styles.babyCard}
+                  onPress={() => router.push('/baby/male/add' as any)}
+                >
                   <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(135, 206, 235, 0.1)' }]}>
                     <MaterialIcons name="child-care" size={40} color="#4A90E2" />
                   </View>
