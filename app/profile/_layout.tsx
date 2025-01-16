@@ -43,6 +43,12 @@ export default function ProfileLayout() {
         headerTitle: 'E-Posta Değiştir',
        }}
       />
+      <Stack.Screen 
+        name="babies" 
+        options={{
+          headerTitle: 'Bebeklerim',
+        }}
+      />
     </Stack>
   );
 } 

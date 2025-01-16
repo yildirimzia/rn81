@@ -17,6 +17,7 @@ export const Colors = {
     tabIconSelected: tintColorLight,
     cardBackground: '#ffffff',
     primary: APP_BLUE,
+    danger: '#DC3545',
   },
   dark: {
     text: '#ECEDEE',
@@ -27,6 +28,7 @@ export const Colors = {
     tabIconSelected: tintColorDark,
     cardBackground: '#1c1c1e',
     primary: APP_BLUE,
+    danger: '#FF4757',
   },
   danger: '#FF3B30',
-};
+} as const;

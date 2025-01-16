@@ -10,25 +10,19 @@ import { Platform } from 'react-native';
 import { useToast } from 'react-native-toast-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import { babyApi } from '@/services/api/baby';
+import { IBabyData } from '@/services/api/baby';
 
 export default function AddBabyScreen() {
   const router = useRouter();
   const { gender } = useLocalSearchParams<{ gender: string }>();
   const toast = useToast();
   
-  const [babyInfo, setBabyInfo] = useState<{
-    name: string;
-    birthDate: Date;
-    weight: string;
-    height: string;
-    gender: 'male' | 'female';
-    photo?: string;
-  }>({
+  const [babyInfo, setBabyInfo] = useState<IBabyData>({
     name: '',
     birthDate: new Date(),
-    weight: '',
-    height: '',
-    gender: gender as 'male' | 'female'
+    weight: 0,
+    height: 0,
+    gender: gender === 'female' ? 'female' : 'male'
   });
   
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -215,8 +209,11 @@ export default function AddBabyScreen() {
                 </View>
                 <TextInput
                   style={styles.input}
-                  value={babyInfo.weight}
-                  onChangeText={(text) => setBabyInfo(prev => ({ ...prev, weight: text }))}
+                  value={babyInfo.weight === 0 ? '' : babyInfo.weight.toString()}
+                  onChangeText={(text) => setBabyInfo(prev => ({ 
+                    ...prev, 
+                    weight: Number(text) || 0 
+                  }))}
                   placeholder="örn: 3250"
                   placeholderTextColor="#999"
                   keyboardType="numeric"
@@ -231,8 +228,11 @@ export default function AddBabyScreen() {
                 </View>
                 <TextInput
                   style={styles.input}
-                  value={babyInfo.height}
-                  onChangeText={(text) => setBabyInfo(prev => ({ ...prev, height: text }))}
+                  value={babyInfo.height === 0 ? '' : babyInfo.height.toString()}
+                  onChangeText={(text) => setBabyInfo(prev => ({ 
+                    ...prev, 
+                    height: Number(text) || 0 
+                  }))}
                   placeholder="örn: 50"
                   placeholderTextColor="#999"
                   keyboardType="numeric"

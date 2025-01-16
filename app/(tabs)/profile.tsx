@@ -146,6 +146,11 @@ export default function ProfileScreen() {
               onPress={() => {router.push('/profile/user-info');}} 
             />
             <MenuItem 
+              icon="child-care" 
+              title="Bebeklerim"
+              onPress={() => router.push('/profile/babies' as any)} 
+            />
+            <MenuItem 
               icon="lock" 
               title="Şifre Değiştir"
               onPress={() => {router.push('/profile/change-password');}} 
