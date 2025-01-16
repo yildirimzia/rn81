@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator, Image, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -7,7 +7,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform } from 'react-native';
-import { useToast } from 'react-native-toast-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import { babyApi } from '@/services/api/baby';
 import { IBabyData } from '@/services/api/baby';
@@ -15,7 +14,6 @@ import { IBabyData } from '@/services/api/baby';
 export default function AddBabyScreen() {
   const router = useRouter();
   const { gender } = useLocalSearchParams<{ gender: string }>();
-  const toast = useToast();
   
   const [babyInfo, setBabyInfo] = useState<IBabyData>({
     name: '',
@@ -94,7 +92,11 @@ export default function AddBabyScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
-      toast.show('Galeriye erişim izni gerekiyor');
+      Alert.alert(
+        'İzin Gerekli',
+        'Galeriye erişim izni gerekiyor',
+        [{ text: 'Tamam' }]
+      );
       return;
     }
 
