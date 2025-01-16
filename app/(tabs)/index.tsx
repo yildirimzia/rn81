@@ -6,10 +6,18 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
+import { Redirect } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
+
+  const { isAuthenticated, signOut, user } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Redirect href="/auth/login" />;
+  }
 
   const onRefresh = async () => {
     setRefreshing(true);
