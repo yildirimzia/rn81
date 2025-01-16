@@ -65,7 +65,7 @@ export default function AddBabyScreen() {
       };
 
       if (image) {
-        data.photo = image;
+        data.photo = { url: image };
       }
 
       const response = await babyApi.createBaby(data);
@@ -108,8 +108,12 @@ export default function AddBabyScreen() {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setBabyInfo(prev => ({ ...prev, photo: result.assets[0].uri }));
+      const imageUri = result.assets[0].uri;
+      setImage(imageUri);
+      setBabyInfo(prev => ({ 
+        ...prev, 
+        photo: { url: imageUri }
+      }));
     }
   };
 

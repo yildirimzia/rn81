@@ -9,7 +9,7 @@ interface Baby {
   gender: 'male' | 'female';
   weight: number;
   height: number;
-  photo?: string;
+  photo?: { url: string };
 }
 
 interface BabyContextType {
