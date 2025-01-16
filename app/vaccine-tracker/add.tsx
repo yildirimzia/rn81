@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Platform, ActivityIndicator, Modal, ActionSheetIOS } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -9,6 +9,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useBabyContext } from '@/context/BabyContext';
+import { vaccineApi } from '@/services/api/vaccine';
 
 const commonVaccines = [
   'Diğer',
@@ -25,27 +27,153 @@ const commonVaccines = [
 ];
 
 export default function AddVaccineScreen() {
+  const { babies, loading } = useBabyContext();
+  const [selectedBabyId, setSelectedBabyId] = useState('');
   const [selectedVaccine, setSelectedVaccine] = useState('');
   const [customVaccine, setCustomVaccine] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
+  const [showVaccinePicker, setShowVaccinePicker] = useState(false);
+  const [showBabyPicker, setShowBabyPicker] = useState(false);
 
-  const handleSave = () => {
-    // Burada API'ye kayıt işlemi yapılacak
-    router.back();
+  console.log('Babies:', babies);
+  console.log('Selected Baby ID:', selectedBabyId);
+
+  const selectedBaby = babies.find(b => b.id === selectedBabyId);
+
+  const handleSave = async () => {
+    if (!selectedBabyId) {
+      // Hata göster: Bebek seçilmedi
+      return;
+    }
+
+    try {
+      const vaccineData = {
+        babyId: selectedBabyId,
+        name: selectedVaccine === 'Diğer' ? customVaccine : selectedVaccine,
+        date: selectedDate,
+        note: note
+      };
+
+      const response = await vaccineApi.createVaccine(vaccineData);
+      if (response.data?.success) {
+        router.back();
+      }
+    } catch (error) {
+      console.error('Aşı kaydedilemedi:', error);
+    }
   };
+
+  const openBabyPicker = () => {
+    if (Platform.OS === 'ios') {
+      const options = ['İptal', ...babies.map(baby => baby.name)];
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: 0,
+          title: 'Bebek Seçin',
+        },
+        (buttonIndex) => {
+          if (buttonIndex !== 0) { // İptal değilse
+            setSelectedBabyId(babies[buttonIndex - 1].id);
+          }
+        }
+      );
+    } else {
+      setShowBabyPicker(true);
+    }
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.light.tint} />
+      </ThemedView>
+    );
+  }
+
+  if (babies.length === 0) {
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.noDataText}>Henüz bebek eklenmemiş</ThemedText>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView style={styles.content}>
         <View style={styles.formCard}>
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Bebek</ThemedText>
+            <TouchableOpacity 
+              onPress={() => setShowBabyPicker(true)}
+              style={styles.pickerButton}
+            >
+              <ThemedText style={[
+                styles.pickerButtonText,
+                !selectedBabyId && styles.placeholderText
+              ]}>
+                {selectedBaby ? selectedBaby.name : "Bebek Seçin"}
+              </ThemedText>
+              <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
+            </TouchableOpacity>
+
+            {showBabyPicker && Platform.OS === 'ios' && (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedBabyId}
+                  onValueChange={(itemValue) => {
+                    setSelectedBabyId(itemValue);
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item key="default" label="Bebek Seçin" value="" />
+                  {babies.map(baby => (
+                    <Picker.Item 
+                      key={`baby-${baby.id}`}
+                      label={baby.name} 
+                      value={baby.id}
+                    />
+                  ))}
+                </Picker>
+                <TouchableOpacity 
+                  style={styles.pickerDoneButton}
+                  onPress={() => setShowBabyPicker(false)}
+                >
+                  <ThemedText style={styles.pickerDoneButtonText}>Tamam</ThemedText>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {showBabyPicker && Platform.OS === 'android' && (
+              <Picker
+                selectedValue={selectedBabyId}
+                onValueChange={(itemValue) => {
+                  setSelectedBabyId(itemValue);
+                  setShowBabyPicker(false);
+                }}
+                style={styles.androidPicker}
+              >
+                <Picker.Item label="Bebek Seçin" value="" />
+                {babies.map(baby => (
+                  <Picker.Item 
+                    key={`baby-${baby.id}`}
+                    label={baby.name} 
+                    value={baby.id}
+                  />
+                ))}
+              </Picker>
+            )}
+          </View>
+          
+
           {/* Aşı Seçimi */}
           <View style={styles.formGroup}>
             <ThemedText style={styles.label}>Aşı İsmi</ThemedText>
             <TouchableOpacity 
-              onPress={() => setShowPicker(true)}
+              onPress={() => setShowVaccinePicker(true)}
               style={styles.pickerButton}
             >
               <ThemedText style={[
@@ -57,7 +185,7 @@ export default function AddVaccineScreen() {
               <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
             </TouchableOpacity>
 
-            {showPicker && Platform.OS === 'ios' && (
+            {showVaccinePicker && Platform.OS === 'ios' && (
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={selectedVaccine}
@@ -66,10 +194,10 @@ export default function AddVaccineScreen() {
                   }}
                   style={styles.picker}
                 >
-                  <Picker.Item label="Aşı Seçin" value="" />
+                  <Picker.Item key="default" label="Aşı Seçin" value="" />
                   {commonVaccines.map(vaccine => (
                     <Picker.Item 
-                      key={vaccine} 
+                      key={`vaccine-${vaccine}`}
                       label={vaccine} 
                       value={vaccine}
                     />
@@ -77,19 +205,19 @@ export default function AddVaccineScreen() {
                 </Picker>
                 <TouchableOpacity 
                   style={styles.pickerDoneButton}
-                  onPress={() => setShowPicker(false)}
+                  onPress={() => setShowVaccinePicker(false)}
                 >
                   <ThemedText style={styles.pickerDoneButtonText}>Tamam</ThemedText>
                 </TouchableOpacity>
               </View>
             )}
 
-            {showPicker && Platform.OS === 'android' && (
+            {showVaccinePicker && Platform.OS === 'android' && (
               <Picker
                 selectedValue={selectedVaccine}
                 onValueChange={(itemValue) => {
                   setSelectedVaccine(itemValue);
-                  setShowPicker(false);
+                  setShowVaccinePicker(false);
                 }}
                 style={styles.androidPicker}
               >
@@ -182,10 +310,11 @@ export default function AddVaccineScreen() {
       <TouchableOpacity 
         style={[
           styles.saveButton,
-          (!selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)) && styles.saveButtonDisabled
+          (!selectedBabyId || !selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)) && 
+          styles.saveButtonDisabled
         ]}
         onPress={handleSave}
-        disabled={!selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)}
+        disabled={!selectedBabyId || !selectedVaccine || (selectedVaccine === 'Diğer' && !customVaccine)}
       >
         <MaterialIcons name="check" size={24} color="#fff" />
         <ThemedText style={styles.saveButtonText}>Kaydet</ThemedText>
@@ -246,7 +375,6 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     backgroundColor: '#fff',
-    padding: 16,
     borderRadius: 12,
     marginTop: 8,
     shadowColor: "#000",
@@ -258,8 +386,20 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  pickerCancelButton: {
+    color: Colors.light.tint,
+    fontSize: 16,
+  },
   picker: {
-    height: 200,
+    height: 180,
   },
   androidPicker: {
     backgroundColor: '#fff',
@@ -361,6 +501,68 @@ const styles = StyleSheet.create({
   datePickerButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  noDataText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#333',
+  },
+  modalCancelButton: {
+    fontSize: 17,
+    color: '#666',
+  },
+  modalDoneButton: {
+    fontSize: 17,
+    color: Colors.light.tint,
+    fontWeight: '600',
+  },
+  modalList: {
+    maxHeight: 400,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalItemSelected: {
+    backgroundColor: '#f8f8f8',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  modalItemTextSelected: {
+    color: Colors.light.tint,
     fontWeight: '600',
   },
 }); 

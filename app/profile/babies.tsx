@@ -19,7 +19,15 @@ export default function BabiesScreen() {
     try {
       const response = await babyApi.getBabies();
       if (response.data?.success) {
-        setBabies(response.data.babies);
+        setBabies(response.data.babies.map(baby => ({
+          id: baby._id,
+          name: baby.name,
+          birthDate: baby.birthDate,
+          gender: baby.gender,
+          weight: baby.weight,
+          height: baby.height,
+          photo: baby.photo
+        })));
       }
     } catch (error) {
       console.error('Bebekler yüklenirken hata:', error);
@@ -71,11 +79,11 @@ export default function BabiesScreen() {
             </View>
           ) : (
             <View style={styles.babiesList}>
-              {babies.map((baby: any) => (
-                <TouchableOpacity 
-                  key={baby._id}
+              {babies.map((baby) => (
+                <TouchableOpacity
+                  key={baby.id}
                   style={styles.babyCard}
-                  onPress={() => router.push(`/baby/detail/${baby._id}`)}
+                  onPress={() => router.push(`/baby/detail/${baby.id}`)}
                 >
                   <View style={[
                     styles.babyAvatar,

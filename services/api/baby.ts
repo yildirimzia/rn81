@@ -1,17 +1,30 @@
 import { apiClient } from './client';
 
-export interface IBabyData {
-    name: string;
-    gender: 'male' | 'female';
-    birthDate: Date;
-    weight: number;
-    height: number;
-    photo?: string;
+interface PhotoType {
+    url: string;
 }
 
-interface IBabiesResponse {
+export interface IBabyData {
+    id?: string;
+    name: string;
+    birthDate: string | Date;
+    gender: 'male' | 'female';
+    weight: number;
+    height: number;
+    photo?: PhotoType;
+}
+
+interface IBabyResponse {
     success: boolean;
-    babies: Array<IBabyData>;
+    babies: Array<{
+        _id: string;
+        name: string;
+        birthDate: string;
+        gender: 'male' | 'female';
+        weight: number;
+        height: number;
+        photo?: PhotoType;
+    }>;
 }
 
 interface BabyApiResponse {
@@ -26,7 +39,8 @@ export const babyApi = {
     },
 
     getBabies: async () => {
-        return await apiClient.get<IBabiesResponse>('list');
+        const response = await apiClient.get<IBabyResponse>('list');
+        return response;
     },
 
     getBabyById: (id: string) => {

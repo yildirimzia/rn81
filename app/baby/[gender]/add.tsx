@@ -15,7 +15,7 @@ export default function AddBabyScreen() {
   const router = useRouter();
   const { gender } = useLocalSearchParams<{ gender: string }>();
   
-  const [babyInfo, setBabyInfo] = useState<IBabyData>({
+  const [babyInfo, setBabyInfo] = useState<Omit<IBabyData, 'birthDate' | 'id'> & { birthDate: Date }>({
     name: '',
     birthDate: new Date(),
     weight: 0,
@@ -184,7 +184,7 @@ export default function AddBabyScreen() {
                 onPress={() => setShowDatePicker(true)}
               >
                 <ThemedText style={styles.dateText}>
-                  {babyInfo.birthDate.toLocaleDateString('tr-TR')}
+                  {(babyInfo.birthDate as Date).toLocaleDateString('tr-TR')}
                 </ThemedText>
                 <MaterialIcons name="calendar-today" size={20} color="#666" />
               </TouchableOpacity>
