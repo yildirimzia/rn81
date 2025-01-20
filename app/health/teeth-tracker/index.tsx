@@ -7,9 +7,18 @@ import { router } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useBabyContext } from '@/context/BabyContext';
+import { useState } from 'react';
+import TeethModal from './TeethModal';
 
 export default function TeethTrackerScreen() {
   const { babies } = useBabyContext();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
+
+  const handleSaveTooth = (toothId: string, date: Date) => {
+    // Diş kaydetme işlemi burada yapılacak
+    console.log('Saved tooth:', toothId, 'Date:', date, 'Baby ID:', selectedBabyId);
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -44,7 +53,10 @@ export default function TeethTrackerScreen() {
               <View style={[styles.teethContainer, { backgroundColor: genderBgColor }]}>
                 <TouchableOpacity 
                   style={styles.addTeethButton}
-                  onPress={() => router.push("/health/teeth-tracker/add")}
+                  onPress={() => {
+                    setSelectedBabyId(baby.id);
+                    setModalVisible(true);
+                  }}
                 >
                   <MaterialIcons name="add" size={24} color={genderColor} />
                   <ThemedText style={[styles.addTeethText, { color: genderColor }]}>
@@ -66,6 +78,12 @@ export default function TeethTrackerScreen() {
           );
         })}
       </ScrollView>
+
+      <TeethModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveTooth}
+      />
     </ThemedView>
   );
 }
