@@ -8,11 +8,9 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useBabyContext } from '@/context/BabyContext';
 import { useState } from 'react';
-import TeethModal from './TeethModal';
 
 export default function TeethTrackerScreen() {
   const { babies } = useBabyContext();
-  const [modalVisible, setModalVisible] = useState(false);
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
 
   const handleSaveTooth = (toothId: string, date: Date) => {
@@ -55,7 +53,7 @@ export default function TeethTrackerScreen() {
                   style={styles.addTeethButton}
                   onPress={() => {
                     setSelectedBabyId(baby.id);
-                    setModalVisible(true);
+                    router.push('/health/teeth-tracker/add' as any);
                   }}
                 >
                   <MaterialIcons name="add" size={24} color={genderColor} />
@@ -79,11 +77,6 @@ export default function TeethTrackerScreen() {
         })}
       </ScrollView>
 
-      <TeethModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSave={handleSaveTooth}
-      />
     </ThemedView>
   );
 }

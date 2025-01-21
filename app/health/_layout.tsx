@@ -86,6 +86,23 @@ export default function HealthLayout() {
           )
         }}
       />
+     <Stack.Screen 
+        name="teeth-tracker/add"
+        options={{
+          title: 'Diş Takibi',
+          headerShadowVisible: false,
+          presentation: 'modal',
+          headerBackTitle: 'Geri',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
     </Stack>
   );
 } 

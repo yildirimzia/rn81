@@ -1,62 +1,70 @@
 import React, { useState } from 'react';
-
-import { Modal, View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Svg, Path, G } from 'react-native-svg';
 import { teethInfo, paths } from './paths';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { ThemedView } from '@/components/ThemedView';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { router } from 'expo-router';
 
-interface TeethModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onSave: (toothId: string, date: Date) => void;
-}
-
-const TeethModal: React.FC<TeethModalProps> = ({ visible, onClose, onSave }) => {
+const TeethPage = () => {
   const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [colors, setColors] = useState<Record<string, string>>({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Function to handle path click and change its color
   const handlePathPress = (id: string) => {
-    // Update colors
-    setColors(prevColors => ({
-      ...prevColors,
-      [id]: prevColors[id] === '#FFFFFF' ? '#ffd3e0' : '#FFFFFF'
-    }));
-    
-    // Update selected tooth
-    setSelectedTooth(id);
+    if (selectedTooth && selectedTooth !== id) {
+      return;
+    }
+
+    if (selectedTooth === id) {
+      setSelectedTooth(null);
+      setColors({});
+    } else {
+      setSelectedTooth(id);
+      const newColors: Record<string, string> = {};
+      paths.forEach(path => {
+        newColors[path.id] = '#FFFFFF';
+      });
+      newColors[id] = '#ffd3e0';
+      setColors(newColors);
+    }
   };
 
-  // SVG içindeki her bir diş grubu için kullanılacak wrapper component
+  const handleSave = () => {
+    if (selectedTooth) {
+      // TODO: Implement actual saving logic here
+      console.log('Saving tooth:', selectedTooth, 'Date:', selectedDate);
+      router.back();
+    }
+  };
+
   const ToothGroup = ({ id, children }: { id: string, children: React.ReactNode }) => (
     <TouchableOpacity onPress={() => handlePathPress(id)}>
-      <G fill={selectedTooth === id ? "#FFFFFF" : undefined}>
+      <G>
         {children}
       </G>
     </TouchableOpacity>
   );
 
   return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+    <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.pageContainer}>
+        <View style={styles.pageContent}>
           <ThemedText style={styles.title}>Diş Seçimi</ThemedText>
           
           <View style={styles.teethMapContainer}>
             <Svg
               width="100%"
-              height={400}
+              height={Dimensions.get('window').width * 0.8}
               viewBox="0 0 479.54059 719.32501"
               preserveAspectRatio="xMidYMid meet"
             >
               <G id="Background">
-                <Path
+              <Path
                   id="Path 1"
                   fillRule="evenodd"
                   fill={'#e46769'}
@@ -82,7 +90,7 @@ const TeethModal: React.FC<TeethModalProps> = ({ visible, onClose, onSave }) => 
                     key={path.id}
                     d={path.d}
                     transform={path.transform}
-                    fill={colors[path.id] || '#ffd3e0'} // Default color is #ffd3e0
+                    fill={colors[path.id] || '#FFFFFF'} // Default color is white
                     strokeWidth={0.868424}
                     onPress={() => handlePathPress(path.id)}
                   />
@@ -105,64 +113,126 @@ const TeethModal: React.FC<TeethModalProps> = ({ visible, onClose, onSave }) => 
             </View>
           )}
 
+          <View style={styles.dateContainer}>
+            <ThemedText style={styles.dateLabel}>Seçilen Tarih:</ThemedText>
+            <ThemedText style={styles.dateValue}>
+              {format(selectedDate, 'd MMMM yyyy', { locale: tr })}
+            </ThemedText>
+            <TouchableOpacity 
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <ThemedText style={styles.dateButtonText}>Tarih Seç</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowDatePicker(false);
+                if (date) setSelectedDate(date);
+              }}
+            />
+          )}
+
           <TouchableOpacity 
             style={[styles.saveButton, !selectedTooth && styles.disabledButton]}
-            onPress={() => selectedTooth && onSave(selectedTooth, selectedDate)}
+            onPress={handleSave}
             disabled={!selectedTooth}
           >
             <ThemedText style={styles.saveButtonText}>Kaydet</ThemedText>
           </TouchableOpacity>
         </View>
-      </View>
-    </Modal>
+      </ScrollView>
+    </ThemedView>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: '#f5f5f5',
   },
-  modalContent: {
-    backgroundColor: 'white',
+  pageContainer: {
+    flexGrow: 1,
+    backgroundColor: '#f0f4f8',
+  },
+  pageContent: {
     padding: 20,
-    borderRadius: 20,
-    width: '90%',
-    maxHeight: '80%',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#333',
   },
   teethMapContainer: {
     width: '100%',
-    aspectRatio: 0.667, // This is approximately 479.54059/719.32501
+    aspectRatio: 0.667,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 10,
     marginVertical: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   dateContainer: {
-    marginVertical: 20,
-    backgroundColor: '#F5F5F5',
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 15,
+    marginVertical: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dateLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 5,
+  },
+  dateValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 15,
+  },
+  dateButton: {
+    backgroundColor: '#4f46e5',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 10,
-    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  dateButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#10b981',
     padding: 15,
     borderRadius: 10,
+    width: '100%',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
   disabledButton: {
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#d1d5db',
   },
   saveButtonText: {
     color: 'white',
@@ -170,27 +240,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   toothInfoContainer: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 15,
     marginVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   toothName: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 5,
+    color: '#111827',
   },
   toothType: {
     fontSize: 16,
-    color: '#666',
+    color: '#6b7280',
   },
   toothFunction: {
     fontSize: 14,
-    color: '#666',
+    color: '#6b7280',
     marginTop: 5,
     fontStyle: 'italic'
   },
 });
 
-
-export default TeethModal; 
+export default TeethPage; 
