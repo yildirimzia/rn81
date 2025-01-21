@@ -16,11 +16,6 @@ const TeethModal: React.FC<TeethModalProps> = ({ visible, onClose, onSave }) => 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [colors, setColors] = useState<Record<string, string>>({});
 
-
-  const handleToothSelect = (toothId: string) => {
-    setSelectedTooth(toothId);
-  };
-
   // Function to handle path click and change its color
   const handlePathPress = (id: string) => {
     // Update colors
