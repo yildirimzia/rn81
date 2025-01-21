@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -10,73 +10,127 @@ import { useBabyContext } from '@/context/BabyContext';
 import { useState } from 'react';
 
 export default function TeethTrackerScreen() {
-  const { babies } = useBabyContext();
-  const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
+  const { babies, deleteTeeth } = useBabyContext();
+  const [expandedBabyId, setExpandedBabyId] = useState<string | null>(null);
 
-  const handleSaveTooth = (toothId: string, date: Date) => {
-    // Diş kaydetme işlemi burada yapılacak
-    console.log('Saved tooth:', toothId, 'Date:', date, 'Baby ID:', selectedBabyId);
+  const toggleExpand = (babyId: string) => {
+    setExpandedBabyId(expandedBabyId === babyId ? null : babyId);
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView style={styles.content}>
-        {babies.map((baby) => {
-          const genderColor = baby.gender === 'male' ? '#4A90E2' : '#FF69B4';
-          const genderBgColor = baby.gender === 'male' ? '#E3F2FD' : '#FFF0F5';
-
-          return (
-            <View key={baby.id} style={styles.babySection}>
-              <View style={[styles.babyHeader, { backgroundColor: genderColor }]}>
-                <View style={styles.babyIconContainer}>
-                  <MaterialIcons 
-                    name={baby.gender === 'male' ? 'person' : 'person-outline'} 
-                    size={32} 
-                    color="#FFF"
-                  />
-                </View>
-                <View style={styles.babyInfo}>
-                  <ThemedText style={styles.babyName}>{baby.name}</ThemedText>
-                  <View style={styles.badgeContainer}>
-                    <View style={styles.badge}>
-                      <MaterialIcons name="face" size={16} color="#FFF" />
-                      <ThemedText style={styles.badgeText}>
-                        Diş Gelişimi
-                      </ThemedText>
-                    </View>
+      <ScrollView>
+        {babies.map((baby) => (
+          <View key={baby.id} style={styles.babySection}>
+            <TouchableOpacity 
+              style={[styles.babyHeader, { 
+                backgroundColor: baby.gender === 'male' ? '#4A90E2' : '#FF69B4' 
+              }]}
+              onPress={() => toggleExpand(baby.id)}
+            >
+              <View style={styles.babyIconContainer}>
+                <MaterialIcons 
+                  name={baby.gender === 'male' ? 'person' : 'person-outline'} 
+                  size={32} 
+                  color="#FFF"
+                />
+              </View>
+              <View style={styles.babyInfo}>
+                <ThemedText style={styles.babyName}>{baby.name}</ThemedText>
+                <View style={styles.badgeContainer}>
+                  <View style={styles.badge}>
+                    <MaterialIcons name="face" size={16} color="#FFF" />
+                    <ThemedText style={styles.badgeText}>
+                      Diş Gelişimi
+                    </ThemedText>
                   </View>
                 </View>
               </View>
+              <MaterialIcons 
+                name={expandedBabyId === baby.id ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                size={24} 
+                color="#FFF"
+              />
+            </TouchableOpacity>
 
-              <View style={[styles.teethContainer, { backgroundColor: genderBgColor }]}>
+            {expandedBabyId === baby.id && (
+              <View style={[styles.teethContainer, { 
+                backgroundColor: baby.gender === 'male' ? '#E3F2FD' : '#FFF0F5' 
+              }]}>
                 <TouchableOpacity 
                   style={styles.addTeethButton}
-                  onPress={() => {
-                    setSelectedBabyId(baby.id);
-                    router.push('/health/teeth-tracker/add' as any);
-                  }}
+                  onPress={() => router.push({
+                    pathname: '/health/teeth-tracker/add',
+                    params: { babyId: baby.id }
+                  })}
                 >
-                  <MaterialIcons name="add" size={24} color={genderColor} />
-                  <ThemedText style={[styles.addTeethText, { color: genderColor }]}>
+                  <MaterialIcons 
+                    name="add" 
+                    size={24} 
+                    color={baby.gender === 'male' ? '#4A90E2' : '#FF69B4'} 
+                  />
+                  <ThemedText style={[styles.addTeethText, { 
+                    color: baby.gender === 'male' ? '#4A90E2' : '#FF69B4' 
+                  }]}>
                     Yeni Diş Kaydı Ekle
                   </ThemedText>
                 </TouchableOpacity>
 
                 <View style={styles.teethList}>
-                  {/* Buraya diş kayıtları gelecek */}
-                  <View style={styles.emptyState}>
-                    <MaterialIcons name="face" size={48} color={genderColor} />
-                    <ThemedText style={[styles.emptyText, { color: genderColor }]}>
-                      Henüz diş kaydı bulunmuyor
-                    </ThemedText>
-                  </View>
+                  {baby.teeth_information && baby.teeth_information.length > 0 ? (
+                    baby.teeth_information.map((tooth, index) => (
+                      <View key={tooth._id || index} style={styles.teethCard}>
+                        <View style={styles.teethContent}>
+                          <View>
+                            <ThemedText style={styles.teethName}>
+                              {tooth.tooth_name}
+                            </ThemedText>
+                            <ThemedText style={styles.teethType}>
+                              {tooth.tooth_type}
+                            </ThemedText>
+                            <ThemedText style={styles.teethDate}>
+                              {format(new Date(tooth.date), 'd MMMM yyyy', { locale: tr })}
+                            </ThemedText>
+                          </View>
+                          <TouchableOpacity
+                            style={[styles.deleteButton, { 
+                              backgroundColor: baby.gender === 'male' ? '#E3F2FD' : '#FFF0F5' 
+                            }]}
+                            onPress={() => {
+                              if (tooth._id) {
+                                deleteTeeth(baby.id, tooth._id);
+                              }
+                            }}
+                          >
+                            <MaterialIcons
+                              name="delete-outline"
+                              size={24}
+                              color={baby.gender === 'male' ? '#4A90E2' : '#FF69B4'}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <MaterialIcons 
+                        name="face" 
+                        size={48} 
+                        color={baby.gender === 'male' ? '#4A90E2' : '#FF69B4'} 
+                      />
+                      <ThemedText style={[styles.emptyText, { 
+                        color: baby.gender === 'male' ? '#4A90E2' : '#FF69B4' 
+                      }]}>
+                        Henüz diş kaydı bulunmuyor
+                      </ThemedText>
+                    </View>
+                  )}
                 </View>
               </View>
-            </View>
-          );
-        })}
+            )}
+          </View>
+        ))}
       </ScrollView>
-
     </ThemedView>
   );
 }
@@ -86,11 +140,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
-  content: {
-    padding: 16,
-  },
   babySection: {
-    marginBottom: 24,
+    margin: 16,
     borderRadius: 20,
     overflow: 'hidden',
     shadowColor: "#000",
@@ -163,6 +214,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 16,
+  },
+  teethCard: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FA',
+    marginBottom: 8,
+  },
+  teethContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  teethName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  teethType: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  teethDate: {
+    fontSize: 12,
+    color: '#888',
+  },
+  deleteButton: {
+    padding: 8,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyState: {
     alignItems: 'center',

@@ -8,12 +8,21 @@ import { ThemedView } from '@/components/ThemedView';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { router } from 'expo-router';
+import { useBabyContext } from '@/context/BabyContext';
+import { babyApi } from '@/services/api/baby';
+import { useLocalSearchParams } from 'expo-router';
 
 const TeethPage = () => {
+  const { babyId } = useLocalSearchParams<{ babyId: string }>();
   const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [colors, setColors] = useState<Record<string, string>>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const { fetchBabies } = useBabyContext();
+  const { babies } = useBabyContext();
+
+  // Seçili bebeği bul
+  const selectedBaby = babies.find(baby => baby.id === babyId);
 
   const handlePathPress = (id: string) => {
     if (selectedTooth && selectedTooth !== id) {
@@ -34,21 +43,37 @@ const TeethPage = () => {
     }
   };
 
-  const handleSave = () => {
-    if (selectedTooth) {
-      // TODO: Implement actual saving logic here
-      console.log('Saving tooth:', selectedTooth, 'Date:', selectedDate);
-      router.back();
+  const handleSave = async () => {
+    if (!selectedTooth || !babyId) return;
+
+    try {
+      const teethData = {
+        tooth_id: selectedTooth,
+        tooth_name: teethInfo[selectedTooth]?.name || 'Bilinmeyen Diş',
+        tooth_type: teethInfo[selectedTooth]?.type || 'Belirsiz',
+        date: selectedDate
+      };
+
+      console.log('Saving tooth for baby:', babyId);
+      const response = await babyApi.addTeeth(babyId, teethData);
+
+      if (response.success) {
+        await fetchBabies();
+        setSelectedTooth(null);
+        setColors({});
+        setSelectedDate(new Date());
+        router.back();
+      }
+    } catch (error) {
+      console.error('Error saving tooth record:', error);
     }
   };
 
-  const ToothGroup = ({ id, children }: { id: string, children: React.ReactNode }) => (
-    <TouchableOpacity onPress={() => handlePathPress(id)}>
-      <G>
-        {children}
-      </G>
-    </TouchableOpacity>
-  );
+  // Eğer babyId yoksa veya geçersizse geri dön
+  if (!babyId || !selectedBaby) {
+    router.back();
+    return null;
+  }
 
   return (
     <ThemedView style={styles.container}>

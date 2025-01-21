@@ -22,6 +22,13 @@ interface Baby {
     discovery_date: Date;
     symptoms?: string;
   }[];
+  teeth_information?: {
+    _id: string;
+    tooth_id: string;
+    tooth_name: string;
+    tooth_type: string;
+    date: Date;
+  }[];
 }
 
 interface BabyContextType {
@@ -33,6 +40,13 @@ interface BabyContextType {
   loading: boolean;
   deleteVaccine: (babyId: string, vaccineId: string) => Promise<void>;
   deleteAllergy: (babyId: string, allergyId: string) => Promise<void>;
+  addTeeth: (babyId: string, teethData: {
+    tooth_id: string;
+    tooth_name: string;
+    tooth_type: string;
+    date: Date;
+  }) => Promise<void>;
+  deleteTeeth: (babyId: string, teethId: string) => Promise<void>;
 }
 
 const BabyContext = createContext<BabyContextType>({
@@ -44,6 +58,8 @@ const BabyContext = createContext<BabyContextType>({
   loading: false,
   deleteVaccine: async () => {},
   deleteAllergy: async () => {},
+  addTeeth: async () => {},
+  deleteTeeth: async () => {},
 });
 
 export function BabyProvider({ children }: { children: ReactNode }) {
@@ -55,9 +71,11 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await babyApi.getBabies();
+      console.log('Baby API Response:', response);
 
       if (response.data?.success) {
         const mappedBabies = response.data.babies.map((baby: any) => {
+          console.log('Mapping baby teeth:', baby.teeth_information);
           return {
             id: baby._id,
             name: baby.name,
@@ -67,13 +85,20 @@ export function BabyProvider({ children }: { children: ReactNode }) {
             height: baby.height,
             photo: baby.photo,
             vaccine_information: baby.vaccine_information || [],
-            allergy_information: baby.allergy_information || []
+            allergy_information: baby.allergy_information || [],
+            teeth_information: baby.teeth_information || []
           };
         });
 
+        console.log('Mapped Babies:', mappedBabies);
         setBabies(mappedBabies);
 
-        if (mappedBabies.length > 0) {
+        if (selectedBaby) {
+          const updatedSelectedBaby = mappedBabies.find(baby => baby.id === selectedBaby.id);
+          if (updatedSelectedBaby) {
+            setSelectedBaby(updatedSelectedBaby);
+          }
+        } else if (mappedBabies.length > 0) {
           setSelectedBaby(mappedBabies[0]);
         }
       }
@@ -114,6 +139,41 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addTeeth = async (babyId: string, teethData: {
+    tooth_id: string;
+    tooth_name: string;
+    tooth_type: string;
+    date: Date;
+  }) => {
+    try {
+      setLoading(true);
+      const response = await babyApi.addTeeth(babyId, teethData);
+      if (response.success) {
+        await fetchBabies();
+      }
+    } catch (error) {
+      console.error('Error adding teeth:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteTeeth = async (babyId: string, teethId: string) => {
+    try {
+      setLoading(true);
+      const response = await babyApi.deleteTeeth(babyId, teethId);
+      if (response.success) {
+        await fetchBabies();
+      }
+    } catch (error) {
+      console.error('Error deleting teeth:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchBabies();
   }, []);
@@ -127,13 +187,13 @@ export function BabyProvider({ children }: { children: ReactNode }) {
       fetchBabies,
       loading,
       deleteVaccine,
-      deleteAllergy
+      deleteAllergy,
+      addTeeth,
+      deleteTeeth
     }}>
       {children}
     </BabyContext.Provider>
   );
 }
-
-
 
 export const useBabyContext = () => useContext(BabyContext);

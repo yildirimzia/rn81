@@ -32,6 +32,22 @@ interface AllergyApiResponse {
     };
 }
 
+interface TeethInfo {
+    tooth_id: string;
+    tooth_name: string;
+    tooth_type: string;
+    date: Date;
+}
+
+interface TeethApiResponse {
+    success: boolean;
+    message?: string;
+    tooth?: any;
+    error?: {
+        message: string;
+    };
+}
+
 export interface IBabyData {
     id?: string;
     name: string;
@@ -125,4 +141,20 @@ export const babyApi = {
         }
         return response.data;
     },
+    addTeeth: async (babyId: string, teethData: TeethInfo): Promise<TeethApiResponse> => {
+        const response = await apiClient.post<TeethApiResponse>(`${babyId}/add-teeth`, teethData);
+        if (!response.data) {
+            throw new Error('Response data is undefined');
+        }
+        return response.data;
+    },
+    deleteTeeth: async (babyId: string, teethId: string) => {
+        const response = await apiClient.delete<TeethApiResponse>(
+            `${babyId}/delete-teeth/${teethId}`
+        );
+        if (!response.data) {
+            throw new Error('Response data is undefined');
+        }
+        return response.data;
+    }
 }; 

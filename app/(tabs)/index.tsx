@@ -78,21 +78,6 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* İkiz Bebek Kartı */}
-            <View style={styles.twinBabySection}>
-              <TouchableOpacity style={styles.twinBabyCard}>
-                <View style={styles.twinIconsContainer}>
-                  <View style={[styles.twinIconWrapper, { backgroundColor: 'rgba(255, 182, 193, 0.1)' }]}>
-                    <MaterialIcons name="child-care" size={32} color="#FF69B4" />
-                  </View>
-                  <View style={[styles.twinIconWrapper, { backgroundColor: 'rgba(135, 206, 235, 0.1)' }]}>
-                    <MaterialIcons name="child-care" size={32} color="#4A90E2" />
-                  </View>
-                </View>
-                <ThemedText style={styles.twinCardTitle}>İkiz Bebek Ekle</ThemedText>
-                <ThemedText style={styles.twinCardSubtitle}>İkiz bebeklerinizi birlikte takip edin</ThemedText>
-              </TouchableOpacity>
-            </View>
           </View>
 
           {/* Gelişim Takibi Bölümü */}
