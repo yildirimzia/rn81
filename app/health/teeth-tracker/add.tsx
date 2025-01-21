@@ -16,7 +16,13 @@ const TeethPage = () => {
   const { babyId } = useLocalSearchParams<{ babyId: string }>();
   const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [colors, setColors] = useState<Record<string, string>>({});
+  const [colors, setColors] = useState<Record<string, string>>(() => {
+    const initialColors: Record<string, string> = {};
+    paths.forEach(path => {
+      initialColors[path.id] = '#ffd3e0';
+    });
+    return initialColors;
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { fetchBabies } = useBabyContext();
   const { babies } = useBabyContext();
@@ -25,20 +31,23 @@ const TeethPage = () => {
   const selectedBaby = babies.find(baby => baby.id === babyId);
 
   const handlePathPress = (id: string) => {
-    if (selectedTooth && selectedTooth !== id) {
-      return;
-    }
-
     if (selectedTooth === id) {
+      // Seçili dişe tekrar tıklanırsa seçimi kaldır
       setSelectedTooth(null);
-      setColors({});
+      // Tüm dişleri pembe yap
+      const resetColors: Record<string, string> = {};
+      paths.forEach(path => {
+        resetColors[path.id] = '#ffd3e0';
+      });
+      setColors(resetColors);
     } else {
+      // Yeni bir diş seçildiğinde
       setSelectedTooth(id);
+      // Tüm dişleri pembe yap, sadece seçili dişi beyaz yap
       const newColors: Record<string, string> = {};
       paths.forEach(path => {
-        newColors[path.id] = '#FFFFFF';
+        newColors[path.id] = path.id === id ? '#FFFFFF' : '#ffd3e0';
       });
-      newColors[id] = '#ffd3e0';
       setColors(newColors);
     }
   };
@@ -54,13 +63,15 @@ const TeethPage = () => {
         date: selectedDate
       };
 
-      console.log('Saving tooth for baby:', babyId);
       const response = await babyApi.addTeeth(babyId, teethData);
 
       if (response.success) {
         await fetchBabies();
         setSelectedTooth(null);
-        setColors({});
+        setColors(prev => ({
+          ...prev,
+          [selectedTooth]: '#ffd3e0'
+        }));
         setSelectedDate(new Date());
         router.back();
       }
