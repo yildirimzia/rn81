@@ -7,7 +7,6 @@ import { useBabyContext } from '@/context/BabyContext';
 import { router, useFocusEffect } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { deleteBreastMilk } from '@/services/api/feeding/breast-milk';
 import { breastMilkApi } from '@/services/api/feeding/breast-milk';
 
 const formatName = (name: string) => {
