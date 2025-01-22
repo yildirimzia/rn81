@@ -8,6 +8,13 @@ import { router, useFocusEffect } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
+const formatName = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const BreastMilkScreen = () => {
   const { babies, fetchBabies } = useBabyContext();
   const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
@@ -77,8 +84,9 @@ const BreastMilkScreen = () => {
   return (
     <ThemedView style={styles.container}>
       <ScrollView>
-        {babies?.map((baby, index) => {
-          // Renkleri cinsiyete göre belirle
+        {babies?.map((baby) => {
+          if (!baby.id) return null;
+          
           const cardColor = baby.gender === 'male' ? '#4B7BEC' : '#FF69B4';
           const contentBgColor = baby.gender === 'male' ? '#F5F8FF' : '#FFF5F9';
           
@@ -95,7 +103,7 @@ const BreastMilkScreen = () => {
                     </View>
                     <View style={styles.babyInfo}>
                       <ThemedText style={styles.babyName}>
-                        {baby.name}
+                        {formatName(baby.name)}
                       </ThemedText>
                       <View style={styles.subtitleContainer}>
                         <MaterialIcons name="access-time" size={16} color="#FFF" />

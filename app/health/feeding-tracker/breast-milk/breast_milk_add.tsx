@@ -8,7 +8,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { LinearGradient } from 'expo-linear-gradient';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useBabyContext } from '@/context/BabyContext';
 import { 
   breastMilkApi, 
@@ -129,163 +128,6 @@ const BreastMilkAddScreen = () => {
     };
   }, [feedingData]);
 
-  const renderFeedingHistory = () => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <MaterialIcons name="history" size={24} color="#FF69B4" />
-        <ThemedText style={styles.sectionTitle}>Emzirme Çizelgesi</ThemedText>
-      </View>
-      
-      {feedingData?.feedings.map((feeding: any) => (
-        <View key={feeding._id} style={styles.feedingRecord}>
-          <View style={styles.feedingTime}>
-            <MaterialIcons name="schedule" size={20} color="#666" />
-            <ThemedText style={styles.feedingTimeText}>
-              {format(feeding.startTime, 'HH:mm', { locale: tr })}
-            </ThemedText>
-          </View>
-          
-          <View style={styles.feedingDetails}>
-            <View style={styles.feedingDuration}>
-              <MaterialIcons name="timer" size={20} color="#666" />
-              <ThemedText style={styles.feedingDetailText}>
-                {feeding.duration} dk
-              </ThemedText>
-            </View>
-            
-            <View style={styles.feedingBreast}>
-              <MaterialIcons name="favorite" size={20} color="#666" />
-              <ThemedText style={styles.feedingDetailText}>
-                {feeding.breast === 'left' ? 'Sol' : 'Sağ'} Göğüs
-              </ThemedText>
-            </View>
-          </View>
-
-          <LinearGradient
-            colors={['#FF69B4', '#FF8DA1']}
-            style={styles.feedingIndicator}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderCharts = () => {
-    if (!chartData) return null;
-
-    const { lineChartData, pieChartData } = chartData;
-
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <MaterialIcons name="insert-chart" size={24} color="#FF69B4" />
-          <ThemedText style={styles.sectionTitle}>Emzirme İstatistikleri</ThemedText>
-        </View>
-
-        {/* Günlük Trend Grafiği */}
-        <View style={styles.chartSection}>
-          <ThemedText style={styles.chartTitle}>Günlük Trend</ThemedText>
-          <View style={styles.chartContainer}>
-            <LineChart
-              data={lineChartData as any}
-              width={Dimensions.get('window').width - 64}
-              height={180}
-              chartConfig={{
-                backgroundColor: '#FFF',
-                backgroundGradientFrom: '#FFF',
-                backgroundGradientTo: '#FFF',
-                decimalPlaces: 0,
-                color: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: '#FF69B4'
-                },
-                propsForBackgroundLines: {
-                  strokeDasharray: '',
-                  stroke: '#F0F0F0',
-                }
-              }}
-              bezier
-              style={styles.chart}
-              withVerticalLines={false}
-              withHorizontalLines={true}
-              yAxisSuffix=" dk"
-              segments={4}
-            />
-          </View>
-        </View>
-
-        {/* Haftalık Özet */}
-        <View style={styles.chartSection}>
-          <ThemedText style={styles.chartTitle}>Haftalık Özet</ThemedText>
-          <View style={styles.chartContainer}>
-            <BarChart
-              data={feedingData?.stats.dailyStats as any}
-              width={Dimensions.get('window').width - 64}
-              height={180}
-              yAxisLabel=""
-              yAxisSuffix=" dk"
-              chartConfig={{
-                backgroundColor: '#FFF',
-                backgroundGradientFrom: '#FFF',
-                backgroundGradientTo: '#FFF',
-                decimalPlaces: 0,
-                color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                barPercentage: 0.7,
-              }}
-              style={styles.chart}
-              showValuesOnTopOfBars={true}
-            />
-          </View>
-        </View>
-
-        {/* Göğüs Dağılımı */}
-        <View style={styles.chartSection}>
-          <ThemedText style={styles.chartTitle}>Göğüs Dağılımı</ThemedText>
-          <View style={styles.chartContainer}>
-            <PieChart
-              data={pieChartData}
-              width={Dimensions.get('window').width - 64}
-              height={180}
-              chartConfig={{
-                color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-              }}
-              accessor="population"
-              backgroundColor="transparent"
-              paddingLeft="0"
-              absolute={false}
-              style={styles.chart}
-            />
-          </View>
-        </View>
-
-        <View style={styles.chartSummary}>
-          <View style={styles.summaryItem}>
-            <ThemedText style={styles.summaryLabel}>Günlük Ortalama</ThemedText>
-            <ThemedText style={styles.summaryValue}>{feedingData?.stats.averageDuration.toFixed(2)} dk</ThemedText>
-          </View>
-          <View style={styles.summaryItem}>
-            <ThemedText style={styles.summaryLabel}>En Uzun Süre</ThemedText>
-            <ThemedText style={styles.summaryValue}>{feedingData?.stats.maxDuration} dk</ThemedText>
-          </View>
-          <View style={styles.summaryItem}>
-            <ThemedText style={styles.summaryLabel}>Toplam Emzirme</ThemedText>
-            <ThemedText style={styles.summaryValue}>{feedingData?.stats.totalCount} kez</ThemedText>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -402,11 +244,6 @@ const BreastMilkAddScreen = () => {
           </View>
         </View>
 
-        {/* İstatistikler */}
-        {renderCharts()}
-        
-        {/* Çizelge */}
-        {renderFeedingHistory()}
       </ScrollView>
 
       {/* Kaydet Butonu */}
@@ -606,39 +443,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 4,
   },
-  chartContainer: {
-    alignItems: 'center',
-    marginHorizontal: -16,
-  },
-  chartSection: {
-    marginBottom: 24,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  chartSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-  },
-  summaryItem: {
+  percentageContainer: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
     alignItems: 'center',
   },
-  summaryLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  summaryValue: {
+  percentageText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',

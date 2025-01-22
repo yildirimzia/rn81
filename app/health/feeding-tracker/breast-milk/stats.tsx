@@ -6,6 +6,17 @@ import { useLocalSearchParams } from 'expo-router';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useBabyContext } from '@/context/BabyContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
+
+
+const formatName = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+  
 
 const StatsScreen = () => {
   const { babyId } = useLocalSearchParams<{ babyId: string }>();
@@ -40,11 +51,31 @@ const StatsScreen = () => {
   stats.averageDuration = stats.totalCount ? stats.totalDuration / stats.totalCount : 0;
 
   const lineChartData = {
-    labels: Object.keys(stats.dailyStats).slice(-6),
+    labels: Object.keys(stats.dailyStats).slice(-7).map(date => 
+      format(new Date(date), 'dd MMM', { locale: tr })
+    ),
     datasets: [{
-      data: Object.values(stats.dailyStats).slice(-6),
+      data: Object.values(stats.dailyStats).slice(-7),
       color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
-      strokeWidth: 2
+      strokeWidth: 2,
+    }]
+  };
+
+  const barChartData = {
+    labels: Object.keys(stats.dailyStats).slice(-7).map(date => 
+      format(new Date(date), 'dd MMM', { locale: tr })
+    ),
+    datasets: [{
+      data: Object.values(stats.dailyStats).slice(-7),
+      colors: [
+        (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
+        (opacity = 1) => `rgba(75, 123, 236, ${opacity})`,
+        (opacity = 1) => `rgba(255, 141, 161, ${opacity})`,
+        (opacity = 1) => `rgba(132, 164, 246, ${opacity})`,
+        (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
+        (opacity = 1) => `rgba(75, 123, 236, ${opacity})`,
+        (opacity = 1) => `rgba(255, 141, 161, ${opacity})`
+      ]
     }]
   };
 
@@ -54,12 +85,14 @@ const StatsScreen = () => {
       population: stats.leftBreastCount,
       color: '#FF69B4',
       legendFontColor: '#7F7F7F',
+      legendFontSize: 14,
     },
     {
       name: 'Sağ Göğüs',
       population: stats.rightBreastCount,
       color: '#4B7BEC',
       legendFontColor: '#7F7F7F',
+      legendFontSize: 14
     }
   ];
 
@@ -67,10 +100,29 @@ const StatsScreen = () => {
     <ThemedView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>{baby.name} - Emzirme İstatistikleri</ThemedText>
+          <ThemedText style={styles.title}>{formatName(baby.name)} - Emzirme İstatistikleri</ThemedText>
         </View>
 
         <View style={styles.content}>
+          {/* Özet Kartları */}
+          <View style={styles.summaryCards}>
+            <View style={[styles.summaryCard, { backgroundColor: '#FF69B4' }]}>
+              <MaterialIcons name="access-time" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.totalDuration} dk</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Toplam Süre</ThemedText>
+            </View>
+            <View style={[styles.summaryCard, { backgroundColor: '#4B7BEC' }]}>
+              <MaterialIcons name="trending-up" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.averageDuration.toFixed(1)} dk</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Ortalama Süre</ThemedText>
+            </View>
+            <View style={[styles.summaryCard, { backgroundColor: '#FF8DA1' }]}>
+              <MaterialIcons name="repeat" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.totalCount}</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Toplam Emzirme</ThemedText>
+            </View>
+          </View>
+
           {/* Günlük Trend Grafiği */}
           <View style={styles.chartSection}>
             <View style={styles.sectionHeader}>
@@ -81,18 +133,21 @@ const StatsScreen = () => {
               <LineChart
                 data={lineChartData}
                 width={Dimensions.get('window').width - 48}
-                height={180}
+                height={220}
                 chartConfig={{
                   backgroundColor: '#FFF',
                   backgroundGradientFrom: '#FFF',
                   backgroundGradientTo: '#FFF',
                   decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
+                  color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
+                  style: {
+                    borderRadius: 16
+                  },
                   propsForDots: {
-                    r: '6',
-                    strokeWidth: '2',
-                    stroke: '#FF69B4'
+                    r: "6",
+                    strokeWidth: "2",
+                    stroke: "#FF69B4"
                   },
                   propsForBackgroundLines: {
                     strokeDasharray: '',
@@ -105,6 +160,7 @@ const StatsScreen = () => {
                 withHorizontalLines={true}
                 yAxisSuffix=" dk"
                 segments={4}
+                fromZero
               />
             </View>
           </View>
@@ -117,14 +173,9 @@ const StatsScreen = () => {
             </View>
             <View style={styles.chartContainer}>
               <BarChart
-                data={{
-                  labels: Object.keys(stats.dailyStats).slice(-7),
-                  datasets: [{
-                    data: Object.values(stats.dailyStats).slice(-7)
-                  }]
-                }}
+                data={barChartData}
                 width={Dimensions.get('window').width - 48}
-                height={180}
+                height={220}
                 yAxisLabel=""
                 yAxisSuffix=" dk"
                 chartConfig={{
@@ -141,6 +192,7 @@ const StatsScreen = () => {
                 }}
                 style={styles.chart}
                 showValuesOnTopOfBars={true}
+                fromZero
               />
             </View>
           </View>
@@ -155,7 +207,7 @@ const StatsScreen = () => {
               <PieChart
                 data={pieChartData}
                 width={Dimensions.get('window').width - 48}
-                height={180}
+                height={220}
                 chartConfig={{
                   color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
                   labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
@@ -163,25 +215,9 @@ const StatsScreen = () => {
                 accessor="population"
                 backgroundColor="transparent"
                 paddingLeft="0"
-                absolute={false}
+                absolute={true}
                 style={styles.chart}
               />
-            </View>
-          </View>
-
-          {/* Özet İstatistikler */}
-          <View style={styles.summaryContainer}>
-            <View style={styles.summaryItem}>
-              <ThemedText style={styles.summaryLabel}>Günlük Ortalama</ThemedText>
-              <ThemedText style={styles.summaryValue}>{stats.averageDuration.toFixed(1)} dk</ThemedText>
-            </View>
-            <View style={styles.summaryItem}>
-              <ThemedText style={styles.summaryLabel}>En Uzun Süre</ThemedText>
-              <ThemedText style={styles.summaryValue}>{stats.maxDuration} dk</ThemedText>
-            </View>
-            <View style={styles.summaryItem}>
-              <ThemedText style={styles.summaryLabel}>Toplam Emzirme</ThemedText>
-              <ThemedText style={styles.summaryValue}>{stats.totalCount} kez</ThemedText>
             </View>
           </View>
         </View>
@@ -240,12 +276,17 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 16,
   },
-  summaryContainer: {
+  summaryCards: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    marginBottom: 16,
+  },
+  summaryCard: {
+    flex: 1,
+    alignItems: 'center',
     padding: 16,
+    borderRadius: 16,
+    marginHorizontal: 4,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -255,18 +296,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  summaryItem: {
-    alignItems: 'center',
+  summaryValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFF',
+    marginVertical: 8,
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    color: '#FFF',
+    opacity: 0.9,
   },
 });
 

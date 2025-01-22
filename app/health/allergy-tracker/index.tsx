@@ -18,7 +18,11 @@ const formatName = (name: string) => {
 export default function AllergyTrackerScreen() {
   const { babies, deleteAllergy } = useBabyContext();
 
-  const handleDeletePress = (babyId: string, allergyId: string) => {
+  const handleDeletePress = (babyId: string | undefined, allergyId: string | undefined) => {
+    if (!allergyId) {
+      Alert.alert('Hata', 'Alerji ID bulunamadı');
+      return;
+    }
     Alert.alert(
       "Alerji Kaydını Sil",
       "Bu alerji kaydını silmek istediğinizden emin misiniz?",
@@ -32,7 +36,7 @@ export default function AllergyTrackerScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteAllergy(babyId, allergyId);
+              await deleteAllergy(babyId as string, allergyId as string);
             } catch (error) {
               Alert.alert('Hata', 'Alerji kaydı silinirken bir hata oluştu');
             }
@@ -108,7 +112,13 @@ export default function AllergyTrackerScreen() {
                         )}
                         <TouchableOpacity
                           style={styles.deleteButton}
-                          onPress={() => handleDeletePress(baby.id, allergy._id)}
+                          onPress={() => {
+                            if (allergy._id) {
+                              handleDeletePress(baby.id, allergy._id);
+                            } else {
+                              Alert.alert('Hata', 'Alerji ID bulunamadı');
+                            }
+                          }}
                         >
                           <MaterialIcons name="delete-outline" size={24} color={genderColor} />
                         </TouchableOpacity>
