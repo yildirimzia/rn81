@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,6 +7,8 @@ import { useBabyContext } from '@/context/BabyContext';
 import { router, useFocusEffect } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { deleteBreastMilk } from '@/services/api/feeding/breast-milk';
+import { breastMilkApi } from '@/services/api/feeding/breast-milk';
 
 const formatName = (name: string) => {
   return name
@@ -33,12 +35,37 @@ const BreastMilkScreen = () => {
     }, [babies])
   );
 
+  const handleDeletePress = async (babyId: string, feedingId: string) => {
+    Alert.alert(
+      "Emzirme Kaydını Sil",
+      "Bu emzirme kaydını silmek istediğinizden emin misiniz?",
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Sil",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await breastMilkApi.deleteFeeding(babyId, feedingId);
+              fetchBabies(); // Listeyi yenile
+            } catch (error) {
+              Alert.alert('Hata', 'Emzirme kaydı silinirken bir hata oluştu');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleBabyPress = (babyId: string | undefined) => {
     if (!babyId) return;
     setExpandedBaby(expandedBaby === babyId ? null : babyId);
   };
 
-  const renderFeedingHistory = (breastMilk: any[]) => {
+  const renderFeedingHistory = (breastMilk: any[], babyId: string) => {
     // Debug için log ekleyelim
     console.log('Breast milk data:', breastMilk);
 
@@ -77,6 +104,13 @@ const BreastMilkScreen = () => {
             </ThemedText>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => feeding._id && handleDeletePress(babyId, feeding._id)}
+        >
+          <MaterialIcons name="delete-outline" size={20} color="#FF6B6B" />
+        </TouchableOpacity>
       </View>
     ));
   };
@@ -152,7 +186,7 @@ const BreastMilkScreen = () => {
                   </View>
 
                   <View style={styles.feedingList}>
-                    {renderFeedingHistory(baby.breast_milk ?? [])}
+                    {renderFeedingHistory(baby.breast_milk ?? [], baby.id ?? '')}
                   </View>
                 </View>
               )}
@@ -290,6 +324,7 @@ const styles = StyleSheet.create({
   feedingRecord: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 12,
     backgroundColor: '#F8F9FA',
     borderRadius: 8,
@@ -322,6 +357,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginLeft: 4,
+  },
+  deleteButton: {
+    padding: 8,
+    marginLeft: 8,
   },
 });
 

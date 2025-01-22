@@ -53,5 +53,9 @@ export const breastMilkApi = {
         });
 
         return apiClient.get(`feeding/breast-milk/list?${queryParams.toString()}`);
+    },
+
+    deleteFeeding: async (babyId: string, feedingId: string): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+        return apiClient.delete(`feeding/breast-milk/${babyId}/${feedingId}`);
     }
-}; 
+};
