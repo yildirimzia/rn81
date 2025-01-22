@@ -29,9 +29,6 @@ export default function ResetPasswordScreen() {
         try {
             const response = await authApi.requestPasswordReset({ email });
 
-            console.log(response, 'response dasdasdasdasd');
-
-
             if (response.data?.success) {
                 setSuccess(response.data?.message);
                 // Token'ı URL'den al

@@ -78,11 +78,9 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await babyApi.getBabies();
-      console.log('API Response:', response.data); // Debug için
 
       if (response.data?.babies) {
         const mappedBabies = response.data.babies.map(baby => {
-          console.log('Mapping baby:', baby); // Debug için
           return {
             id: baby._id,
             name: baby.name,
@@ -98,7 +96,6 @@ export function BabyProvider({ children }: { children: ReactNode }) {
           };
         });
         
-        console.log('Mapped babies:', mappedBabies); // Debug için
         setBabies(mappedBabies as IBabyData[]);
         
         if (mappedBabies.length > 0 && !activeChild) {

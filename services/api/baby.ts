@@ -76,6 +76,13 @@ export interface IBabyData {
         duration: number;
         breast: 'left' | 'right';
     }[];
+    formula_milk?: {
+        _id: string;
+        startTime: Date;
+        amount: number;
+        brand: string;
+        notes?: string;
+    }[];
 }
 
 interface IBabyResponse {
@@ -123,7 +130,6 @@ export const babyApi = {
 
     getBabies: async () => {
         const response = await apiClient.get<IBabyResponse>('list');
-        console.log('API Response in service:', response);
         return response;
     },
 

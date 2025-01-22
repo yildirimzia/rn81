@@ -64,14 +64,6 @@ const BreastMilkAddScreen = () => {
 
     try {
       setIsSaving(true);
-      console.log('Kaydetme başlıyor:', {
-        babyId,
-        startTime: date,
-        duration,
-        breast: selectedBreast,
-        feedingType: 'breast_milk'
-      });
-
       const response = await breastMilkApi.createFeeding({
         babyId,
         startTime: date,
@@ -80,7 +72,6 @@ const BreastMilkAddScreen = () => {
         feedingType: 'breast_milk'
       });
 
-      console.log('Kaydetme başarılı:', response);
       await fetchFeedings();
       router.back();
     } catch (error) {

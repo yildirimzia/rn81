@@ -7,7 +7,7 @@ import { useBabyContext } from '@/context/BabyContext';
 import { router, useFocusEffect } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { breastMilkApi } from '@/services/api/feeding/breast-milk';
+import { formulaApi } from '@/services/api/feeding/formula';
 
 const formatName = (name: string) => {
   return name
@@ -16,7 +16,7 @@ const formatName = (name: string) => {
     .join(' ');
 };
 
-const BreastMilkScreen = () => {
+const FormulaScreen = () => {
   const { babies, fetchBabies } = useBabyContext();
   const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
 
@@ -26,18 +26,10 @@ const BreastMilkScreen = () => {
     }, [])
   );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (babies && babies.length > 0 && babies[0].id) {
-        setExpandedBaby(babies[0].id);
-      }
-    }, [babies])
-  );
-
   const handleDeletePress = async (babyId: string, feedingId: string) => {
     Alert.alert(
-      "Emzirme Kaydını Sil",
-      "Bu emzirme kaydını silmek istediğinizden emin misiniz?",
+      "Mama Kaydını Sil",
+      "Bu mama kaydını silmek istediğinizden emin misiniz?",
       [
         {
           text: "İptal",
@@ -48,10 +40,10 @@ const BreastMilkScreen = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              await breastMilkApi.deleteFeeding(babyId, feedingId);
-              fetchBabies(); // Listeyi yenile
+              await formulaApi.deleteFeeding(babyId, feedingId);
+              fetchBabies();
             } catch (error) {
-              Alert.alert('Hata', 'Emzirme kaydı silinirken bir hata oluştu');
+              Alert.alert('Hata', 'Mama kaydı silinirken bir hata oluştu');
             }
           }
         }
@@ -59,25 +51,19 @@ const BreastMilkScreen = () => {
     );
   };
 
-  const handleBabyPress = (babyId: string | undefined) => {
-    if (!babyId) return;
-    setExpandedBaby(expandedBaby === babyId ? null : babyId);
-  };
-
-  const renderFeedingHistory = (breastMilk: any[], babyId: string) => {
-    // Debug için log ekleyelim
-    if (!breastMilk || breastMilk.length === 0) {
+  const renderFeedingHistory = (formulaMilk: any[], babyId: string) => {
+    if (!formulaMilk || formulaMilk.length === 0) {
       return (
         <View style={[styles.emptyState, { backgroundColor: '#FFF' }]}>
-          <MaterialIcons name="child-care" size={48} color="#FF69B4" />
+          <MaterialIcons name="baby-changing-station" size={48} color="#FF69B4" />
           <ThemedText style={styles.emptyStateText}>
-            Henüz emzirme kaydı bulunmuyor
+            Henüz mama kaydı bulunmuyor
           </ThemedText>
         </View>
       );
     }
 
-    return breastMilk.map((feeding, index) => (
+    return formulaMilk.map((feeding, index) => (
       <View key={feeding._id || index} style={styles.feedingRecord}>
         <View style={styles.feedingTime}>
           <MaterialIcons name="schedule" size={20} color="#666" />
@@ -87,17 +73,17 @@ const BreastMilkScreen = () => {
         </View>
         
         <View style={styles.feedingDetails}>
-          <View style={styles.feedingDuration}>
-            <MaterialIcons name="timer" size={20} color="#666" />
+          <View style={styles.feedingAmount}>
+            <MaterialIcons name="local-drink" size={20} color="#666" />
             <ThemedText style={styles.feedingDetailText}>
-              {feeding.duration} dk
+              {feeding.amount} ml
             </ThemedText>
           </View>
           
-          <View style={styles.feedingBreast}>
-            <MaterialIcons name="favorite" size={20} color="#666" />
+          <View style={styles.feedingBrand}>
+            <MaterialIcons name="label" size={20} color="#666" />
             <ThemedText style={styles.feedingDetailText}>
-              {feeding.breast === 'left' ? 'Sol' : 'Sağ'} Göğüs
+              {feeding.brand}
             </ThemedText>
           </View>
         </View>
@@ -125,7 +111,11 @@ const BreastMilkScreen = () => {
             <View key={baby.id}>
               <TouchableOpacity 
                 style={[styles.babyCard, { backgroundColor: cardColor }]}
-                onPress={() => handleBabyPress(baby.id)}
+                onPress={() => {
+                  if (baby.id) {
+                    setExpandedBaby(expandedBaby === baby.id ? null : baby.id);
+                  }
+                }}
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.profileSection}>
@@ -137,9 +127,9 @@ const BreastMilkScreen = () => {
                         {formatName(baby.name)}
                       </ThemedText>
                       <View style={styles.subtitleContainer}>
-                        <MaterialIcons name="access-time" size={16} color="#FFF" />
+                        <MaterialIcons name="baby-changing-station" size={16} color="#FFF" />
                         <ThemedText style={styles.babySubtitle}>
-                          Anne Sütü Takibi
+                          Mama Takibi
                         </ThemedText>
                       </View>
                     </View>
@@ -158,20 +148,20 @@ const BreastMilkScreen = () => {
                     <TouchableOpacity 
                       style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginRight: 8 }]}
                       onPress={() => router.push({
-                        pathname: '/health/feeding-tracker/breast-milk/breast_milk_add',
+                        pathname: "/health/feeding-tracker/formula" as any,
                         params: { babyId: baby.id }
                       })}
                     >
                       <MaterialIcons name="add" size={20} color={cardColor} />
                       <ThemedText style={[styles.actionButtonText, { color: cardColor }]}>
-                        Yeni Emzirme Kaydı
+                        Yeni Mama Kaydı
                       </ThemedText>
                     </TouchableOpacity>
 
                     <TouchableOpacity 
                       style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginLeft: 8 }]}
                       onPress={() => router.push({
-                        pathname: '/health/feeding-tracker/breast-milk/stats',
+                        pathname: '/health/feeding-tracker/formula/stats' as any,
                         params: { babyId: baby.id }
                       })}
                     >
@@ -183,7 +173,7 @@ const BreastMilkScreen = () => {
                   </View>
 
                   <View style={styles.feedingList}>
-                    {renderFeedingHistory(baby.breast_milk ?? [], baby.id ?? '')}
+                    {renderFeedingHistory(baby.formula_milk ?? [], baby.id)}
                   </View>
                 </View>
               )}
@@ -342,11 +332,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  feedingDuration: {
+  feedingAmount: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  feedingBreast: {
+  feedingBrand: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -361,4 +351,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BreastMilkScreen;
+export default FormulaScreen;
