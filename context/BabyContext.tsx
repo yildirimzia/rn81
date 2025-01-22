@@ -29,13 +29,19 @@ interface Baby {
     tooth_type: string;
     date: Date;
   }[];
+  breast_milk?: {
+    _id: string;
+    amount: number;
+    date: Date;
+  }[];
 }
 
-interface BabyContextType {
-  babies: Baby[];
-  setBabies: (babies: Baby[]) => void;
-  selectedBaby: Baby | null;
-  setSelectedBaby: (baby: Baby | null) => void;
+export interface BabyContextType {
+  babies: IBabyData[];
+  activeChild?: IBabyData;
+  setBabies: (babies: IBabyData[]) => void;
+  selectedBaby: IBabyData | null;
+  setSelectedBaby: (baby: IBabyData | null) => void;
   fetchBabies: () => Promise<void>;
   loading: boolean;
   deleteVaccine: (babyId: string, vaccineId: string) => Promise<void>;
@@ -63,47 +69,44 @@ const BabyContext = createContext<BabyContextType>({
 });
 
 export function BabyProvider({ children }: { children: ReactNode }) {
-  const [babies, setBabies] = useState<Baby[]>([]);
-  const [selectedBaby, setSelectedBaby] = useState<Baby | null>(null);
+  const [babies, setBabies] = useState<IBabyData[]>([]);
+  const [selectedBaby, setSelectedBaby] = useState<IBabyData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeChild, setActiveChild] = useState<IBabyData | undefined>(undefined);
 
   const fetchBabies = async () => {
     try {
       setLoading(true);
       const response = await babyApi.getBabies();
-      console.log('Baby API Response:', response);
+      console.log('API Response:', response.data); // Debug için
 
-      if (response.data?.success) {
-        const mappedBabies = response.data.babies.map((baby: any) => {
-          console.log('Mapping baby teeth:', baby.teeth_information);
+      if (response.data?.babies) {
+        const mappedBabies = response.data.babies.map(baby => {
+          console.log('Mapping baby:', baby); // Debug için
           return {
             id: baby._id,
             name: baby.name,
-            birthDate: new Date(baby.birthDate),
+            birthDate: baby.birthDate,
             gender: baby.gender,
             weight: baby.weight,
             height: baby.height,
             photo: baby.photo,
             vaccine_information: baby.vaccine_information || [],
             allergy_information: baby.allergy_information || [],
-            teeth_information: baby.teeth_information || []
+            teeth_information: baby.teeth_information || [],
+            breast_milk: baby.breast_milk || []
           };
         });
-
-        console.log('Mapped Babies:', mappedBabies);
-        setBabies(mappedBabies);
-
-        if (selectedBaby) {
-          const updatedSelectedBaby = mappedBabies.find(baby => baby.id === selectedBaby.id);
-          if (updatedSelectedBaby) {
-            setSelectedBaby(updatedSelectedBaby);
-          }
-        } else if (mappedBabies.length > 0) {
-          setSelectedBaby(mappedBabies[0]);
+        
+        console.log('Mapped babies:', mappedBabies); // Debug için
+        setBabies(mappedBabies as IBabyData[]);
+        
+        if (mappedBabies.length > 0 && !activeChild) {
+          setActiveChild(mappedBabies[0] as IBabyData);
         }
       }
     } catch (error) {
-      console.error('Error fetching babies:', error);
+      console.error('Bebekler getirilemedi:', error);
     } finally {
       setLoading(false);
     }

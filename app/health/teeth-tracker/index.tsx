@@ -13,7 +13,8 @@ export default function TeethTrackerScreen() {
   const { babies, deleteTeeth } = useBabyContext();
   const [expandedBabyId, setExpandedBabyId] = useState<string | null>(null);
 
-  const toggleExpand = (babyId: string) => {
+  const toggleExpand = (babyId: string | undefined) => {
+    if (!babyId) return;
     setExpandedBabyId(expandedBabyId === babyId ? null : babyId);
   };
 
@@ -79,7 +80,7 @@ export default function TeethTrackerScreen() {
                 <View style={styles.teethList}>
                   {baby.teeth_information && baby.teeth_information.length > 0 ? (
                     baby.teeth_information.map((tooth, index) => (
-                      <View key={tooth._id || index} style={styles.teethCard}>
+                      <View key={tooth.tooth_id || index} style={styles.teethCard}>
                         <View style={styles.teethContent}>
                           <View>
                             <ThemedText style={styles.teethName}>
@@ -97,8 +98,8 @@ export default function TeethTrackerScreen() {
                               backgroundColor: baby.gender === 'male' ? '#E3F2FD' : '#FFF0F5' 
                             }]}
                             onPress={() => {
-                              if (tooth._id) {
-                                deleteTeeth(baby.id, tooth._id);
+                              if (tooth.tooth_id && baby.id) {
+                                deleteTeeth(baby.id, tooth.tooth_id);
                               }
                             }}
                           >

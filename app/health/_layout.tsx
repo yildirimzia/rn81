@@ -120,6 +120,51 @@ export default function HealthLayout() {
           )
         }}
       />
+      <Stack.Screen 
+        name="feeding-tracker/index"
+        options={{
+          title: 'Beslenme Takibi',
+          headerShadowVisible: false,
+          headerBackTitle: 'Sağlık',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
+      <Stack.Screen 
+        name="feeding-tracker/breast-milk/breast_milk"
+        options={{
+          title: 'Anne Sütü Takibi',
+          headerShadowVisible: false,
+          headerBackTitle: 'Kategoriler',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+              <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
+      <Stack.Screen 
+        name="feeding-tracker/breast-milk/breast_milk_add"
+        options={{
+          title: 'Yeni Emzirme Kaydı',
+          headerShadowVisible: false,
+          presentation: 'modal',
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }}
+      />
     </Stack>
   );
 } 

@@ -83,7 +83,7 @@ export default function AllergyTrackerScreen() {
                   </View>
                 ) : (
                   <View style={styles.allergyList}>
-                    {allergies.map((allergy, index) => (
+                    {allergies.map((allergy: any, index: any) => (
                       <View key={index} style={styles.allergyCard}>
                         <View style={styles.cardHeader}>
                           <View style={[styles.iconContainer, { backgroundColor: genderColor }]}>

@@ -57,6 +57,25 @@ export interface IBabyData {
     height: number;
     photo?: PhotoType;
     vaccine_information?: VaccineInfo[];
+    allergy_information?: {
+        _id: string;
+        allergy_name: string;
+        discovery_date: Date;
+        symptoms?: string;
+    }[];
+    teeth_information?: {
+        _id: string;
+        tooth_id: string;
+        tooth_name: string;
+        tooth_type: string;
+        date: Date;
+    }[];
+    breast_milk?: {
+        _id: string;
+        startTime: Date;
+        duration: number;
+        breast: 'left' | 'right';
+    }[];
 }
 
 interface IBabyResponse {
@@ -70,6 +89,14 @@ interface IBabyResponse {
         height: number;
         photo?: PhotoType;
         vaccine_information?: VaccineInfo[];
+        allergy_information?: AllergyInfo[];
+        teeth_information?: TeethInfo[];
+        breast_milk?: {
+            _id: string;
+            startTime: Date;
+            duration: number;
+            breast: 'left' | 'right';
+        }[];
     }>;
 }
 

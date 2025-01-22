@@ -33,7 +33,15 @@ export default function HealthScreen() {
       icon: 'face',
       route: '/health/teeth-tracker',
       gradientColors: ['#2196F3', '#1976D2'] as const
-    }
+    },
+    {
+      id: 'feeding',
+      title: 'Beslenme Takibi',
+      subtitle: 'Beslenme kayıtlarınızı yönetin',
+      icon: 'restaurant',
+      route: '/health/feeding-tracker',
+      gradientColors: ['#FF5722', '#E64A19'] as const
+    },
   ];
 
   return (
