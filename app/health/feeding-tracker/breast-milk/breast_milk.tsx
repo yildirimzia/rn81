@@ -1,23 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBabyContext } from '@/context/BabyContext';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const BreastMilkScreen = () => {
-  const { babies } = useBabyContext();
+  const { babies, fetchBabies } = useBabyContext();
   const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
 
-  // İlk bebeğin kartını otomatik aç
-  useEffect(() => {
-    if (babies && babies.length > 0 && babies[0].id) {
-      setExpandedBaby(babies[0].id);
-    }
-  }, [babies]);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBabies();
+    }, [])
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (babies && babies.length > 0 && babies[0].id) {
+        setExpandedBaby(babies[0].id);
+      }
+    }, [babies])
+  );
 
   const handleBabyPress = (babyId: string | undefined) => {
     if (!babyId) return;
@@ -71,8 +78,9 @@ const BreastMilkScreen = () => {
     <ThemedView style={styles.container}>
       <ScrollView>
         {babies?.map((baby, index) => {
-          const cardColor = index % 2 === 0 ? '#FF69B4' : '#4B7BEC';
-          const contentBgColor = index % 2 === 0 ? '#FFF5F9' : '#F5F8FF';
+          // Renkleri cinsiyete göre belirle
+          const cardColor = baby.gender === 'male' ? '#4B7BEC' : '#FF69B4';
+          const contentBgColor = baby.gender === 'male' ? '#F5F8FF' : '#FFF5F9';
           
           return (
             <View key={baby.id}>
@@ -107,17 +115,33 @@ const BreastMilkScreen = () => {
 
               {expandedBaby === baby.id && (
                 <View style={[styles.expandedContent, { backgroundColor: contentBgColor }]}>
-                  <TouchableOpacity 
-                    style={[styles.addButton, { backgroundColor: '#FFF' }]}
-                    onPress={() => router.push({
-                      pathname: '/health/feeding-tracker/breast-milk/breast_milk_add',
-                      params: { babyId: baby.id }
-                    })}
-                  >
-                    <ThemedText style={[styles.addButtonText, { color: cardColor }]}>
-                      + Yeni Emzirme Kaydı Ekle
-                    </ThemedText>
-                  </TouchableOpacity>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity 
+                      style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginRight: 8 }]}
+                      onPress={() => router.push({
+                        pathname: '/health/feeding-tracker/breast-milk/breast_milk_add',
+                        params: { babyId: baby.id }
+                      })}
+                    >
+                      <MaterialIcons name="add" size={20} color={cardColor} />
+                      <ThemedText style={[styles.actionButtonText, { color: cardColor }]}>
+                        Yeni Emzirme Kaydı
+                      </ThemedText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginLeft: 8 }]}
+                      onPress={() => router.push({
+                        pathname: '/health/feeding-tracker/breast-milk/stats',
+                        params: { babyId: baby.id }
+                      })}
+                    >
+                      <MaterialIcons name="bar-chart" size={20} color={cardColor} />
+                      <ThemedText style={[styles.actionButtonText, { color: cardColor }]}>
+                        İstatistikler
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
 
                   <View style={styles.feedingList}>
                     {renderFeedingHistory(baby.breast_milk ?? [])}
@@ -205,10 +229,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  addButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+  buttonContainer: {
+    flexDirection: 'row',
     marginBottom: 16,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -216,12 +246,12 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 1,
+    elevation: 2,
   },
-  addButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   emptyState: {
     alignItems: 'center',
