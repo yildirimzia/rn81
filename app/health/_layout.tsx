@@ -224,6 +224,21 @@ export default function HealthLayout() {
             )
           }}
         />
+
+
+        <Stack.Screen 
+          name="feeding-tracker/formula/stats"
+          options={{
+            title: 'Mama Takibi İstatistikleri',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

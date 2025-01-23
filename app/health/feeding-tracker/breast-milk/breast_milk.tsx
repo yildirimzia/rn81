@@ -57,50 +57,54 @@ const BreastMilkScreen = () => {
   };
 
   const renderFeedingHistory = (breastMilk: any[], babyId: string) => {
-    // Debug için log ekleyelim
     if (!breastMilk || breastMilk.length === 0) {
-      return (
-        <View style={[styles.emptyState, { backgroundColor: '#FFF' }]}>
-          <MaterialIcons name="child-care" size={48} color="#FF69B4" />
-          <ThemedText style={styles.emptyStateText}>
-            Henüz emzirme kaydı bulunmuyor
-          </ThemedText>
-        </View>
-      );
+        return (
+            <View style={[styles.emptyState, { backgroundColor: '#FFF' }]}>
+                <MaterialIcons name="child-care" size={48} color="#FF69B4" />
+                <ThemedText style={styles.emptyStateText}>
+                    Henüz emzirme kaydı bulunmuyor
+                </ThemedText>
+            </View>
+        );
     }
 
-    return breastMilk.map((feeding, index) => (
-      <View key={feeding._id || index} style={styles.feedingRecord}>
-        <View style={styles.feedingTime}>
-          <MaterialIcons name="schedule" size={20} color="#666" />
-          <ThemedText style={styles.feedingTimeText}>
-            {format(new Date(feeding.startTime), 'HH:mm', { locale: tr })}
-          </ThemedText>
-        </View>
-        
-        <View style={styles.feedingDetails}>
-          <View style={styles.feedingDuration}>
-            <MaterialIcons name="timer" size={20} color="#666" />
-            <ThemedText style={styles.feedingDetailText}>
-              {feeding.duration} dk
-            </ThemedText>
-          </View>
-          
-          <View style={styles.feedingBreast}>
-            <MaterialIcons name="favorite" size={20} color="#666" />
-            <ThemedText style={styles.feedingDetailText}>
-              {feeding.breast === 'left' ? 'Sol' : 'Sağ'} Göğüs
-            </ThemedText>
-          </View>
-        </View>
+    // Tarihleri yerel saat dilimine göre sırala
+    const sortedFeedings = [...breastMilk].sort((a, b) => {
+        return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+    });
 
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => feeding._id && handleDeletePress(babyId, feeding._id)}
-        >
-          <MaterialIcons name="delete-outline" size={20} color="#FF6B6B" />
-        </TouchableOpacity>
-      </View>
+    return sortedFeedings.map((feeding, index) => (
+        <View key={feeding._id || index} style={styles.feedingRecord}>
+            <View style={styles.feedingTime}>
+                <MaterialIcons name="schedule" size={20} color="#666" />
+                <ThemedText style={styles.feedingTimeText}>
+                    {format(new Date(feeding.startTime), 'dd MMM HH:mm', { locale: tr })}
+                </ThemedText>
+            </View>
+            
+            <View style={styles.feedingDetails}>
+                <View style={styles.feedingDuration}>
+                    <MaterialIcons name="timer" size={20} color="#666" />
+                    <ThemedText style={styles.feedingDetailText}>
+                        {feeding.duration} dk
+                    </ThemedText>
+                </View>
+                
+                <View style={styles.feedingBreast}>
+                    <MaterialIcons name="favorite" size={20} color="#666" />
+                    <ThemedText style={styles.feedingDetailText}>
+                        {feeding.breast === 'left' ? 'Sol' : 'Sağ'} Göğüs
+                    </ThemedText>
+                </View>
+            </View>
+
+            <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => feeding._id && handleDeletePress(babyId, feeding._id)}
+            >
+                <MaterialIcons name="delete-outline" size={20} color="#FF6B6B" />
+            </TouchableOpacity>
+        </View>
     ));
   };
 

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useBabyContext } from '@/context/BabyContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+
 
 const formatName = (name: string) => {
     return name
@@ -19,90 +20,53 @@ const formatName = (name: string) => {
 
 const StatsScreen = () => {
   const { babyId } = useLocalSearchParams<{ babyId: string }>();
-  const { babies, fetchBabies } = useBabyContext();
-  const [stats, setStats] = useState({
+  const { babies } = useBabyContext();
+  const baby = babies.find(b => b.id === babyId);
+
+  if (!baby) return null;
+
+  const formula = baby.formula || [];
+
+  // İstatistikleri hesapla
+  const stats = {
     totalDuration: 0,
     averageDuration: 0,
     leftBreastCount: 0,
     rightBreastCount: 0,
     maxDuration: 0,
-    totalCount: 0,
+    totalCount: formula.length,
     dailyStats: {} as { [key: string]: number }
+  };
+
+  formula.forEach(feeding => {
+    stats.totalDuration += feeding.amount;
+    stats.maxDuration = Math.max(stats.maxDuration, feeding.amount);
+    if (feeding.brand === 'left') stats.leftBreastCount++;
+    if (feeding.brand === 'right') stats.rightBreastCount++;
+
+    const date = new Date(feeding.startTime).toISOString().split('T')[0];
+    stats.dailyStats[date] = (stats.dailyStats[date] || 0) + feeding.amount;
   });
 
-  // Sayfaya her fokuslandığında verileri güncelle
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchBabies();
-    }, [])
-  );
-
-  // babies değiştiğinde stats'i güncelle
-  React.useEffect(() => {
-    const baby = babies.find(b => b.id === babyId);
-    if (!baby) return;
-
-    const breastMilk = baby.breast_milk || [];
-    const newStats = {
-      totalDuration: 0,
-      averageDuration: 0,
-      leftBreastCount: 0,
-      rightBreastCount: 0,
-      maxDuration: 0,
-      totalCount: breastMilk.length,
-      dailyStats: {} as { [key: string]: number }
-    };
-
-    // Son 7 günün tarihlerini oluştur
-    const today = new Date();
-    const last7Days = Array.from({length: 7}, (_, i) => {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    // Tüm günler için başlangıç değeri 0 olarak ayarla
-    last7Days.forEach(date => {
-      newStats.dailyStats[date] = 0;
-    });
-
-    // Beslenme verilerini günlere göre topla
-    breastMilk.forEach(feeding => {
-      newStats.totalDuration += feeding.duration;
-      newStats.maxDuration = Math.max(newStats.maxDuration, feeding.duration);
-      if (feeding.breast === 'left') newStats.leftBreastCount++;
-      if (feeding.breast === 'right') newStats.rightBreastCount++;
-
-      const date = new Date(feeding.startTime).toISOString().split('T')[0];
-      if (newStats.dailyStats.hasOwnProperty(date)) {
-        newStats.dailyStats[date] += feeding.duration;
-      }
-    });
-
-    newStats.averageDuration = newStats.totalCount ? newStats.totalDuration / newStats.totalCount : 0;
-    setStats(newStats);
-  }, [babies, babyId]);
-
-  const baby = babies.find(b => b.id === babyId);
-  if (!baby) return null;
-
-  // Son 7 günün tarihlerini al
-  const dates = Object.keys(stats.dailyStats).sort();
-  const values = dates.map(date => stats.dailyStats[date]);
+  stats.averageDuration = stats.totalCount ? stats.totalDuration / stats.totalCount : 0;
 
   const lineChartData = {
-    labels: dates.map(date => format(new Date(date), 'dd MMM', { locale: tr })),
+    labels: Object.keys(stats.dailyStats).slice(-7).map(date => 
+      format(new Date(date), 'dd MMM', { locale: tr })
+    ),
     datasets: [{
-      data: values,
+      data: Object.values(stats.dailyStats).slice(-7),
       color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
       strokeWidth: 2,
     }]
   };
 
   const barChartData = {
-    labels: dates.map(date => format(new Date(date), 'dd MMM', { locale: tr })),
+    labels: Object.keys(stats.dailyStats).slice(-7).map(date => 
+      format(new Date(date), 'dd MMM', { locale: tr })
+    ),
     datasets: [{
-      data: values,
+      data: Object.values(stats.dailyStats).slice(-7),
       colors: [
         (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
         (opacity = 1) => `rgba(75, 123, 236, ${opacity})`,
@@ -233,29 +197,7 @@ const StatsScreen = () => {
             </View>
           </View>
 
-          {/* Göğüs Dağılımı */}
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <MaterialIcons name="pie-chart" size={24} color="#FF69B4" />
-              <ThemedText style={styles.sectionTitle}>Göğüs Dağılımı</ThemedText>
-            </View>
-            <View style={styles.chartContainer}>
-              <PieChart
-                data={pieChartData}
-                width={Dimensions.get('window').width - 48}
-                height={220}
-                chartConfig={{
-                  color: (opacity = 1) => `rgba(255, 105, 180, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft="0"
-                absolute={true}
-                style={styles.chart}
-              />
-            </View>
-          </View>
+   
         </View>
       </ScrollView>
     </ThemedView>

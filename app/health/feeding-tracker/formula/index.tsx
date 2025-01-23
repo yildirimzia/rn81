@@ -163,7 +163,7 @@ const FormulaScreen = () => {
                     <TouchableOpacity 
                       style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginLeft: 8 }]}
                       onPress={() => router.push({
-                        pathname: '/health/feeding-tracker/formula/add',
+                        pathname: '/health/feeding-tracker/formula/stats',
                         params: { babyId: baby.id }
                       })}
                     >
