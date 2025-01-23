@@ -2,40 +2,6 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { babyApi } from '@/services/api/baby';
 import { IBabyData } from '@/services/api/baby';
 
-interface Baby {
-  id: string;
-  name: string;
-  birthDate: Date;
-  gender: 'male' | 'female';
-  weight: number;
-  height: number;
-  photo?: { url: string };
-  vaccine_information?: {
-    _id: string;
-    vaccine_name: string;
-    vaccine_date: Date;
-    vaccine_notes?: string;
-  }[];
-  allergy_information?: {
-    _id: string;
-    allergy_name: string;
-    discovery_date: Date;
-    symptoms?: string;
-  }[];
-  teeth_information?: {
-    _id: string;
-    tooth_id: string;
-    tooth_name: string;
-    tooth_type: string;
-    date: Date;
-  }[];
-  breast_milk?: {
-    _id: string;
-    amount: number;
-    date: Date;
-  }[];
-}
-
 export interface BabyContextType {
   babies: IBabyData[];
   activeChild?: IBabyData;
@@ -78,9 +44,12 @@ export function BabyProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const response = await babyApi.getBabies();
+      
+      console.log('Raw API response:', JSON.stringify(response.data, null, 2)); // Debug için
 
       if (response.data?.babies) {
         const mappedBabies = response.data.babies.map(baby => {
+          console.log('Mapping baby formula:', baby.formula); // Debug için
           return {
             id: baby._id,
             name: baby.name,
@@ -89,13 +58,42 @@ export function BabyProvider({ children }: { children: ReactNode }) {
             weight: baby.weight,
             height: baby.height,
             photo: baby.photo,
-            vaccine_information: baby.vaccine_information || [],
-            allergy_information: baby.allergy_information || [],
-            teeth_information: baby.teeth_information || [],
-            breast_milk: baby.breast_milk || []
+            formula: Array.isArray(baby.formula) ? baby.formula.map(formula => ({
+              _id: formula._id,
+              startTime: new Date(formula.startTime),
+              amount: formula.amount,
+              brand: formula.brand,
+              notes: formula.notes
+            })) : [],
+            teeth_information: baby.teeth_information?.map(teeth => ({
+              _id: teeth._id,
+              tooth_id: teeth.tooth_id,
+              tooth_name: teeth.tooth_name,
+              tooth_type: teeth.tooth_type,
+              date: new Date(teeth.date)
+            })) || [],
+            vaccine_information: baby.vaccine_information?.map(vaccine => ({
+              _id: vaccine._id,
+              vaccine_name: vaccine.vaccine_name,
+              vaccine_date: new Date(vaccine.vaccine_date),
+              vaccine_notes: vaccine.vaccine_notes
+            })) || [],
+            allergy_information: baby.allergy_information?.map(allergy => ({
+              _id: allergy._id,
+              allergy_name: allergy.allergy_name,
+              discovery_date: new Date(allergy.discovery_date),
+              symptoms: allergy.symptoms
+            })) || [],
+            breast_milk: baby.breast_milk?.map(milk => ({
+              _id: milk._id,
+              startTime: new Date(milk.startTime),
+              duration: milk.duration,
+              breast: milk.breast
+            })) || []
           };
         });
-        
+
+        console.log('Mapped babies formula:', mappedBabies.map(b => b.formula)); // Debug için
         setBabies(mappedBabies as IBabyData[]);
         
         if (mappedBabies.length > 0 && !activeChild) {

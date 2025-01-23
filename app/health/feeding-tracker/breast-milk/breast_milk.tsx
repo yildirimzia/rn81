@@ -20,12 +20,7 @@ const BreastMilkScreen = () => {
   const { babies, fetchBabies } = useBabyContext();
   const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchBabies();
-    }, [])
-  );
-
+  // babies değiştiğinde expanded baby'i güncelle
   useFocusEffect(
     React.useCallback(() => {
       if (babies && babies.length > 0 && babies[0].id) {
@@ -39,17 +34,14 @@ const BreastMilkScreen = () => {
       "Emzirme Kaydını Sil",
       "Bu emzirme kaydını silmek istediğinizden emin misiniz?",
       [
-        {
-          text: "İptal",
-          style: "cancel"
-        },
+        { text: "İptal", style: "cancel" },
         {
           text: "Sil",
           style: "destructive",
           onPress: async () => {
             try {
               await breastMilkApi.deleteFeeding(babyId, feedingId);
-              fetchBabies(); // Listeyi yenile
+              fetchBabies(); // Silme işleminden sonra güncelle
             } catch (error) {
               Alert.alert('Hata', 'Emzirme kaydı silinirken bir hata oluştu');
             }

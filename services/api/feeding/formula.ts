@@ -23,17 +23,30 @@ export interface CreateFormulaFeedingData {
     notes?: string;
 }
 
+interface FormulaFeedingData {
+    babyId: string;
+    startTime: Date;
+    amount: number;
+    brand: string;
+    notes?: string;
+}
+
 export const formulaApi = {
-    createFeeding: async (data: CreateFormulaFeedingData): Promise<ApiResponse<{ success: boolean; feeding: IFormulaFeeding }>> => {
-        return apiClient.post('feeding/formula/create', data);
+    createFeeding: async (data: FormulaFeedingData) => {
+        console.log('Sending data to API:', data);
+        const response = await apiClient.post('feeding/formula/create', data);
+        console.log('API Response:', response.data);
+        return response.data;
     },
 
-    getFeedings: async (params: { babyId: string }): Promise<ApiResponse<FormulaFeedingResponse>> => {
-        const queryParams = new URLSearchParams({ babyId: params.babyId });
-        return apiClient.get(`feeding/formula/list?${queryParams.toString()}`);
+    getFeedings: async ({ babyId }: { babyId: string }) => {
+        console.log('Fetching feedings for baby:', babyId);
+        const response = await apiClient.get(`feeding/formula/list?babyId=${babyId}`);
+        console.log('Get Feedings Response:', response.data);
+        return response.data;
     },
 
-    deleteFeeding: async (babyId: string, feedingId: string): Promise<ApiResponse<{ success: boolean; message: string }>> => {
-        return apiClient.delete(`feeding/formula/${babyId}/${feedingId}`);
+    deleteFeeding: async (babyId: string, feedingId: string) => {
+        return await apiClient.delete(`feeding/formula/${babyId}/${feedingId}`);
     }
 }; 

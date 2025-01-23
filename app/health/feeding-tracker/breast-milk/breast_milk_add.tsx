@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, Dimensions, Alert } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -26,7 +26,7 @@ type FeedingRecord = {
 const BreastMilkAddScreen = () => {
   const { babyId } = useLocalSearchParams<{ babyId: string }>();
   const router = useRouter();
-  const { activeChild } = useBabyContext();
+  const { activeChild, fetchBabies } = useBabyContext();
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [duration, setDuration] = useState(15); // dakika cinsinden
@@ -55,29 +55,25 @@ const BreastMilkAddScreen = () => {
   };
 
   // Yeni kayıt ekle
-  const handleSave = async () => {
+  const handleSubmit = async () => {
     if (!selectedBreast) {
       console.error('Lütfen göğüs seçimi yapın');
       return;
     }
 
-
     try {
-      setIsSaving(true);
-      const response = await breastMilkApi.createFeeding({
+      await breastMilkApi.createFeeding({
         babyId,
         startTime: date,
-        duration,
+        duration: Number(duration),
         breast: selectedBreast,
         feedingType: 'breast_milk'
       });
-
-      await fetchFeedings();
+      
+      await fetchBabies();  // Context'i güncelle
       router.back();
     } catch (error) {
-      console.error('Kaydetme hatası:', error);
-    } finally {
-      setIsSaving(false);
+      Alert.alert('Hata', 'Emzirme kaydı eklenirken bir hata oluştu');
     }
   };
 
@@ -241,7 +237,7 @@ const BreastMilkAddScreen = () => {
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.saveButton}
-          onPress={handleSave}
+          onPress={handleSubmit}
           disabled={isSaving || !selectedBreast}
         >
           <LinearGradient

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -20,28 +20,27 @@ const FormulaScreen = () => {
   const { babies, fetchBabies } = useBabyContext();
   const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
 
+  // babies değiştiğinde expanded baby'i güncelle
   useFocusEffect(
     React.useCallback(() => {
-      fetchBabies();
-    }, [])
+      if (babies && babies.length > 0 && babies[0].id) {
+        setExpandedBaby(babies[0].id);
+      }
+    }, [babies])
   );
-
   const handleDeletePress = async (babyId: string, feedingId: string) => {
     Alert.alert(
       "Mama Kaydını Sil",
       "Bu mama kaydını silmek istediğinizden emin misiniz?",
       [
-        {
-          text: "İptal",
-          style: "cancel"
-        },
+        { text: "İptal", style: "cancel" },
         {
           text: "Sil",
           style: "destructive",
           onPress: async () => {
             try {
               await formulaApi.deleteFeeding(babyId, feedingId);
-              fetchBabies();
+              fetchBabies();  // Silme işleminden sonra güncelle
             } catch (error) {
               Alert.alert('Hata', 'Mama kaydı silinirken bir hata oluştu');
             }
@@ -51,7 +50,14 @@ const FormulaScreen = () => {
     );
   };
 
+  const handleBabyPress = (babyId: string | undefined) => {
+    if (!babyId) return;
+    setExpandedBaby(expandedBaby === babyId ? null : babyId);
+  };
+
   const renderFeedingHistory = (formulaMilk: any[], babyId: string) => {
+    console.log('Baby formula data:', formulaMilk); // Debug için
+    
     if (!formulaMilk || formulaMilk.length === 0) {
       return (
         <View style={[styles.emptyState, { backgroundColor: '#FFF' }]}>
@@ -111,11 +117,7 @@ const FormulaScreen = () => {
             <View key={baby.id}>
               <TouchableOpacity 
                 style={[styles.babyCard, { backgroundColor: cardColor }]}
-                onPress={() => {
-                  if (baby.id) {
-                    setExpandedBaby(expandedBaby === baby.id ? null : baby.id);
-                  }
-                }}
+                onPress={() => handleBabyPress(baby.id)}
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.profileSection}>
@@ -148,7 +150,7 @@ const FormulaScreen = () => {
                     <TouchableOpacity 
                       style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginRight: 8 }]}
                       onPress={() => router.push({
-                        pathname: "/health/feeding-tracker/formula" as any,
+                        pathname: '/health/feeding-tracker/formula/add',
                         params: { babyId: baby.id }
                       })}
                     >
@@ -161,7 +163,7 @@ const FormulaScreen = () => {
                     <TouchableOpacity 
                       style={[styles.actionButton, { backgroundColor: '#FFF', flex: 1, marginLeft: 8 }]}
                       onPress={() => router.push({
-                        pathname: '/health/feeding-tracker/formula/stats' as any,
+                        pathname: '/health/feeding-tracker/formula/add',
                         params: { babyId: baby.id }
                       })}
                     >
@@ -173,7 +175,7 @@ const FormulaScreen = () => {
                   </View>
 
                   <View style={styles.feedingList}>
-                    {renderFeedingHistory(baby.formula_milk ?? [], baby.id)}
+                    {renderFeedingHistory(baby.formula ?? [], baby.id)}
                   </View>
                 </View>
               )}
