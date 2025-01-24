@@ -19,7 +19,7 @@ const FEEDING_CATEGORIES = [
   {
     id: 'formula',
     title: 'Mama',
-    icon: 'baby-changing-station',
+    icon: 'local-drink',
     gradientColors: ['#4B7BEC', '#3867D6']
   },
   {

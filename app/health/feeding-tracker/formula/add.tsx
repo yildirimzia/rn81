@@ -46,7 +46,7 @@ const FormulaAddScreen = () => {
     <ThemedView style={styles.container}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <MaterialIcons name="baby-changing-station" size={32} color="#FF69B4" />
+          <MaterialIcons name="local-drink" size={32} color="#FF69B4" />
           <ThemedText style={styles.headerText}>Yeni Mama Kaydı</ThemedText>
         </View>
 

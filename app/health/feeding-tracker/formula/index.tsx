@@ -61,7 +61,7 @@ const FormulaScreen = () => {
     if (!formulaMilk || formulaMilk.length === 0) {
       return (
         <View style={[styles.emptyState, { backgroundColor: '#FFF' }]}>
-          <MaterialIcons name="baby-changing-station" size={48} color="#FF69B4" />
+          <MaterialIcons name="local-drink" size={48} color="#FF69B4" />
           <ThemedText style={styles.emptyStateText}>
             Henüz mama kaydı bulunmuyor
           </ThemedText>
