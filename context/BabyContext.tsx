@@ -102,6 +102,13 @@ export function BabyProvider({ children }: { children: ReactNode }) {
               startTime: new Date(water.startTime),
               amount: water.amount,
               notes: water.notes
+            })) || [],
+            supplement: baby.supplement?.map(supplement => ({
+              _id: supplement._id,
+              startTime: new Date(supplement.startTime),
+              supplementType: supplement.supplementType,
+              amount: supplement.amount,
+              notes: supplement.notes
             })) || []
           };
         });

@@ -325,6 +325,48 @@ export default function HealthLayout() {
             )
           }}
         />
+               <Stack.Screen 
+          name="feeding-tracker/supplement/add" 
+          options={{
+            title: 'Vitamin/Takviye Ekle',
+            headerShadowVisible: false,
+            presentation: 'modal',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/supplement/index"
+          options={{
+            title: 'Vitamin/Takviye Takibi',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/supplement/stats"
+          options={{
+            title: 'Vitamin/Takviye İstatistikleri',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

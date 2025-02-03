@@ -35,7 +35,7 @@ const FEEDING_CATEGORIES = [
     gradientColors: ['#45AAF2', '#2D98DA']
   },
   {
-    id: 'vitamin',
+    id: 'supplement',
     title: 'Vitamin / Takviye',
     icon: 'medication',
     gradientColors: ['#FA8231', '#FC5C65']
@@ -62,6 +62,15 @@ const FeedingTrackerScreen = () => {
         break;
       case 'solid-food':
         router.push('/health/feeding-tracker/solid-food' as any);
+        break;
+      case 'water':
+        router.push('/health/feeding-tracker/water' as any);
+        break;
+      case 'supplement':
+        router.push('/health/feeding-tracker/supplement' as any);
+        break;
+      case 'snacks':
+        router.push('/health/feeding-tracker/snacks/index' as any);
         break;
       // Diğer kategoriler için de benzer şekilde...
       default:

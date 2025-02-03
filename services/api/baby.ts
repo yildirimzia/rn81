@@ -105,6 +105,16 @@ export interface IBabyData {
         amount: number;
         notes?: string;
     }>;
+    supplement?: Array<{
+        _id: string;
+        startTime: Date;
+        supplementType: {
+            category: string;
+            name: string;
+        };
+        amount: string;
+        notes?: string;
+    }>;
 }
 
 interface IBabyResponse {
@@ -133,20 +143,30 @@ interface IBabyResponse {
             brand: string;
             notes?: string;
         }>;
-        solid_food?: Array<{
+        water?: Array<{
             _id: string;
             startTime: Date;
-            foodType: {
-                category: 'fruit' | 'vegetable' | 'grain' | 'protein' | 'other';
+            amount: number;
+            notes?: string;
+        }>;
+        supplement?: Array<{
+            _id: string;
+            startTime: Date;
+            supplementType: {
+                category: string;
                 name: string;
             };
             amount: string;
             notes?: string;
         }>;
-        water?: Array<{
+        solid_food?: Array<{
             _id: string;
             startTime: Date;
-            amount: number;
+            foodType: {
+                category: string;
+                name: string;
+            };
+            amount: string;
             notes?: string;
         }>;
     }>;
