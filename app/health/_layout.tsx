@@ -367,6 +367,48 @@ export default function HealthLayout() {
             )
           }}
         />
+        <Stack.Screen 
+          name="feeding-tracker/snacks/add"
+          options={{
+            title: 'Atıştırmalık Ekle',
+            headerShadowVisible: false,
+            presentation: 'modal',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/snacks/index"
+          options={{
+            title: 'Atıştırmalık Takibi',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/snacks/stats"
+          options={{
+            title: 'Atıştırmalık İstatistikleri',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

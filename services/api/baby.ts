@@ -115,6 +115,16 @@ export interface IBabyData {
         amount: string;
         notes?: string;
     }>;
+    snacks: Array<{
+        _id: string;
+        startTime: Date;
+        snackType: {
+            category: string;
+            name: string;
+        };
+        amount: string;
+        notes?: string;
+    }>;
 }
 
 interface IBabyResponse {
@@ -163,6 +173,16 @@ interface IBabyResponse {
             _id: string;
             startTime: Date;
             foodType: {
+                category: string;
+                name: string;
+            };
+            amount: string;
+            notes?: string;
+        }>;
+        snacks: Array<{
+            _id: string;
+            startTime: Date;
+            snackType: {
                 category: string;
                 name: string;
             };

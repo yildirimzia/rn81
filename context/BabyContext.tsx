@@ -109,6 +109,13 @@ export function BabyProvider({ children }: { children: ReactNode }) {
               supplementType: supplement.supplementType,
               amount: supplement.amount,
               notes: supplement.notes
+            })) || [],
+            snacks: baby.snacks?.map(snack => ({
+              _id: snack._id,
+              startTime: new Date(snack.startTime),
+              snackType: snack.snackType,
+              amount: snack.amount,
+              notes: snack.notes
             })) || []
           };
         });

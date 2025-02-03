@@ -70,7 +70,7 @@ const FeedingTrackerScreen = () => {
         router.push('/health/feeding-tracker/supplement' as any);
         break;
       case 'snacks':
-        router.push('/health/feeding-tracker/snacks/index' as any);
+        router.push('/health/feeding-tracker/snacks' as any);
         break;
       // Diğer kategoriler için de benzer şekilde...
       default:
