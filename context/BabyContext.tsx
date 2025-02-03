@@ -89,7 +89,14 @@ export function BabyProvider({ children }: { children: ReactNode }) {
               startTime: new Date(milk.startTime),
               duration: milk.duration,
               breast: milk.breast
-            })) || []
+            })) || [],
+            solid_food: baby.solid_food?.map(solidFood => ({
+              _id: solidFood._id,
+              startTime: new Date(solidFood.startTime),
+              foodType: solidFood.foodType || { category: '', name: '' },
+              amount: solidFood.amount,
+              notes: solidFood.notes
+            })) || [] 
           };
         });
 

@@ -23,7 +23,7 @@ const FEEDING_CATEGORIES = [
     gradientColors: ['#4B7BEC', '#3867D6']
   },
   {
-    id: 'solid_food',
+    id: 'solid-food',
     title: 'Ek Gıda',
     icon: 'restaurant',
     gradientColors: ['#20BF6B', '#0FB9B1']
@@ -52,12 +52,16 @@ const FeedingTrackerScreen = () => {
   const router = useRouter();
 
   const handleCategorySelect = (categoryId: string) => {
+    console.log('Selected category:', categoryId);
     switch (categoryId) {
       case 'breast_milk':
         router.push('/health/feeding-tracker/breast-milk/breast_milk' as any);
         break;
       case 'formula':
         router.push('/health/feeding-tracker/formula' as any);
+        break;
+      case 'solid-food':
+        router.push('/health/feeding-tracker/solid-food' as any);
         break;
       // Diğer kategoriler için de benzer şekilde...
       default:
