@@ -96,7 +96,13 @@ export function BabyProvider({ children }: { children: ReactNode }) {
               foodType: solidFood.foodType || { category: '', name: '' },
               amount: solidFood.amount,
               notes: solidFood.notes
-            })) || [] 
+            })) || [],
+            water: baby.water?.map(water => ({
+              _id: water._id,
+              startTime: new Date(water.startTime),
+              amount: water.amount,
+              notes: water.notes
+            })) || []
           };
         });
 

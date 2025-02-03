@@ -95,11 +95,14 @@ export interface IBabyData {
     solid_food?: Array<{
         _id: string;
         startTime: Date;
-        foodType: {
-            category: 'fruit' | 'vegetable' | 'grain' | 'protein' | 'other';
-            name: string;
-        };
+        foodType: { category: string; name: string };
         amount: string;
+        notes?: string;
+    }>;
+    water?: Array<{
+        _id: string;
+        startTime: Date;
+        amount: number;
         notes?: string;
     }>;
 }
@@ -138,6 +141,12 @@ interface IBabyResponse {
                 name: string;
             };
             amount: string;
+            notes?: string;
+        }>;
+        water?: Array<{
+            _id: string;
+            startTime: Date;
+            amount: number;
             notes?: string;
         }>;
     }>;

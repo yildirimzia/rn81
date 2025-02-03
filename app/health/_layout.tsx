@@ -283,6 +283,48 @@ export default function HealthLayout() {
             )
           }}
         />
+        <Stack.Screen 
+          name="feeding-tracker/water/add"
+          options={{
+            title: 'Su Ekle',
+            headerShadowVisible: false,
+            presentation: 'modal',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/water/index"
+          options={{
+            title: 'Su Takibi',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="feeding-tracker/water/stats"
+          options={{
+            title: 'Su Takibi İstatistikleri',
+            headerShadowVisible: false,
+            headerBackTitle: 'Kategoriler',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

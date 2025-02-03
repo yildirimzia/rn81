@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useLocalSearchParams } from 'expo-router';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import { LineChart } from 'react-native-chart-kit';
 import { useBabyContext } from '@/context/BabyContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
+interface WaterFeeding {
+  _id: string;
+  startTime: Date;
+  amount: number;
+  notes?: string;
+}
 
 const formatName = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
-  
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 const StatsScreen = () => {
   const { babyId } = useLocalSearchParams<{ babyId: string }>();
@@ -25,36 +30,16 @@ const StatsScreen = () => {
 
   if (!baby) return null;
 
-  const solidFood = baby.solid_food || [];
+  const water = baby.water || [];
 
   // İstatistikleri hesapla
   const stats = {
-    totalCount: solidFood.length,
-    categoryStats: {} as { [key: string]: number },
-    dailyStats: {} as { [key: string]: number },
-    mostCommonFood: '',
-    maxCount: 0
+    totalAmount: 0,
+    averageAmount: 0,
+    maxAmount: 0,
+    totalCount: water.length,
+    dailyStats: {} as { [key: string]: number }
   };
-
-  // Kategori ve günlük istatistikleri hesapla
-  const foodCounts: { [key: string]: number } = {};
-  solidFood.forEach(feeding => {
-    // Kategori istatistikleri
-    const category = feeding.foodType.category;
-    stats.categoryStats[category] = (stats.categoryStats[category] || 0) + 1;
-
-    // Günlük istatistikler
-    const date = new Date(feeding.startTime).toISOString().split('T')[0];
-    stats.dailyStats[date] = (stats.dailyStats[date] || 0) + 1;
-
-    // En çok verilen yiyecek
-    const foodName = feeding.foodType.name;
-    foodCounts[foodName] = (foodCounts[foodName] || 0) + 1;
-    if (foodCounts[foodName] > stats.maxCount) {
-      stats.maxCount = foodCounts[foodName];
-      stats.mostCommonFood = foodName;
-    }
-  });
 
   // Son 7 günün verilerini hazırla
   const last7Days = [...Array(7)].map((_, i) => {
@@ -62,6 +47,16 @@ const StatsScreen = () => {
     date.setDate(date.getDate() - (6 - i));
     return date.toISOString().split('T')[0];
   });
+
+  water.forEach((feeding: WaterFeeding) => {
+    stats.totalAmount += feeding.amount;
+    stats.maxAmount = Math.max(stats.maxAmount, feeding.amount);
+
+    const date = new Date(feeding.startTime).toISOString().split('T')[0];
+    stats.dailyStats[date] = (stats.dailyStats[date] || 0) + feeding.amount;
+  });
+
+  stats.averageAmount = stats.totalCount ? Math.round(stats.totalAmount / stats.totalCount) : 0;
 
   const lineChartData = {
     labels: last7Days.map(date => 
@@ -74,40 +69,30 @@ const StatsScreen = () => {
     }]
   };
 
-  const pieChartData = Object.entries(stats.categoryStats).map(([category, count]) => ({
-    name: getCategoryLabel(category),
-    population: count,
-    color: getCategoryColor(category),
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 14,
-  }));
-
   return (
     <ThemedView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>{formatName(baby.name)} - Ek Gıda İstatistikleri</ThemedText>
+          <ThemedText style={styles.title}>{formatName(baby.name)} - Su Takibi İstatistikleri</ThemedText>
         </View>
 
         <View style={styles.content}>
           {/* Özet Kartları */}
           <View style={styles.summaryCards}>
             <View style={[styles.summaryCard, { backgroundColor: '#FF69B4' }]}>
-              <MaterialIcons name="restaurant" size={24} color="#FFF" />
-              <ThemedText style={styles.summaryValue}>{stats.totalCount}</ThemedText>
-              <ThemedText style={styles.summaryLabel}>Toplam Öğün</ThemedText>
+              <MaterialIcons name="local-drink" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.totalAmount} ml</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Toplam Su</ThemedText>
             </View>
             <View style={[styles.summaryCard, { backgroundColor: '#4B7BEC' }]}>
-              <MaterialIcons name="category" size={24} color="#FFF" />
-              <ThemedText style={styles.summaryValue}>{Object.keys(stats.categoryStats).length}</ThemedText>
-              <ThemedText style={styles.summaryLabel}>Farklı Kategori</ThemedText>
+              <MaterialIcons name="trending-up" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.averageAmount} ml</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Ortalama</ThemedText>
             </View>
             <View style={[styles.summaryCard, { backgroundColor: '#FF8DA1' }]}>
-              <MaterialIcons name="favorite" size={24} color="#FFF" />
-              <ThemedText style={styles.summaryValue} numberOfLines={1} ellipsizeMode="tail">
-                {stats.mostCommonFood || '-'}
-              </ThemedText>
-              <ThemedText style={styles.summaryLabel}>En Çok Verilen</ThemedText>
+              <MaterialIcons name="water" size={24} color="#FFF" />
+              <ThemedText style={styles.summaryValue}>{stats.totalCount}</ThemedText>
+              <ThemedText style={styles.summaryLabel}>Toplam İçim</ThemedText>
             </View>
           </View>
 
@@ -115,7 +100,7 @@ const StatsScreen = () => {
           <View style={styles.chartSection}>
             <View style={styles.sectionHeader}>
               <MaterialIcons name="timeline" size={24} color="#FF69B4" />
-              <ThemedText style={styles.sectionTitle}>Günlük Trend</ThemedText>
+              <ThemedText style={styles.sectionTitle}>Günlük Su Tüketimi</ThemedText>
             </View>
             <View style={styles.chartContainer}>
               <LineChart
@@ -135,8 +120,8 @@ const StatsScreen = () => {
                     stroke: "#FF69B4"
                   },
                   propsForBackgroundLines: {
-                    strokeDasharray: '', // Düz çizgiler
-                    stroke: "#F0F0F0",  // Açık gri arka plan çizgileri
+                    strokeDasharray: '',
+                    stroke: "#F0F0F0",
                     strokeWidth: "1"
                   },
                   propsForLabels: {
@@ -173,7 +158,7 @@ const StatsScreen = () => {
                         fontSize: 12,
                         fontWeight: '600'
                       }}>
-                        {indexData}
+                        {indexData}ml
                       </ThemedText>
                     </View>
                   ) : null
@@ -182,65 +167,14 @@ const StatsScreen = () => {
             </View>
             <View style={styles.chartLegend}>
               <ThemedText style={styles.chartLegendText}>
-                Son 7 günde verilen öğün sayısı
+                Son 7 günde tüketilen su miktarı (ml)
               </ThemedText>
-            </View>
-          </View>
-
-          {/* Kategori Dağılımı */}
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <MaterialIcons name="pie-chart" size={24} color="#FF69B4" />
-              <ThemedText style={styles.sectionTitle}>Kategori Dağılımı</ThemedText>
-            </View>
-            <View style={styles.chartContainer}>
-              <PieChart
-                data={pieChartData}
-                width={Dimensions.get('window').width - 48}
-                height={220}
-                chartConfig={{
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft="15"
-                absolute
-              />
             </View>
           </View>
         </View>
       </ScrollView>
     </ThemedView>
   );
-};
-
-// Yardımcı fonksiyonlar
-const getCategoryLabel = (category: string): string => {
-  const labels: { [key: string]: string } = {
-    fruit: 'Meyve',
-    vegetable: 'Sebze',
-    grain: 'Tahıl',
-    protein: 'Protein',
-    milk: 'Süt',
-    food: 'Yiyecek',
-    drink: 'İçecek',
-    other: 'Diğer'
-  };
-  return labels[category] || category;
-};
-
-const getCategoryColor = (category: string): string => {
-  const colors: { [key: string]: string } = {
-    fruit: '#FF69B4',
-    vegetable: '#4B7BEC',
-    grain: '#FF8DA1',
-    protein: '#84A4F6',
-    milk: '#FFA07A',
-    food: '#98FB98',
-    drink: '#87CEEB',
-    other: '#DDA0DD'
-  };
-  return colors[category] || '#999999';
 };
 
 const styles = StyleSheet.create({
@@ -338,4 +272,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StatsScreen; 
+export default StatsScreen;
