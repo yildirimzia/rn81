@@ -87,7 +87,10 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.developmentList}>
-              <TouchableOpacity style={styles.developmentItem}>
+              <TouchableOpacity 
+                style={styles.developmentItem} 
+                onPress={() => router.push('/health/growth-tracker')}
+              >
                 <MaterialIcons name="straighten" size={24} color={Colors[colorScheme ?? 'light'].tint} />
                 <View style={styles.developmentContent}>
                   <ThemedText style={styles.developmentTitle}>Boy & Kilo Takibi</ThemedText>

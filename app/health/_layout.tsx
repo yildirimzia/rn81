@@ -409,6 +409,51 @@ export default function HealthLayout() {
             )
           }}
         />
+        <Stack.Screen 
+          name="growth-tracker/add"
+          options={{
+            title: 'Boy/Kilo Kaydı Ekle',
+            headerShadowVisible: false,
+            presentation: 'modal',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="growth-tracker/stats"
+          options={{
+            title: 'Büyüme İstatistikleri',
+            headerShadowVisible: false,
+            headerBackTitle: 'Geri',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 10 }}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
+        <Stack.Screen 
+          name="growth-tracker/index"
+          options={{
+            title: 'Gelişim Takibi',
+            headerShadowVisible: false,
+            headerBackTitle: 'Sağlık',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

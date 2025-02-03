@@ -53,7 +53,7 @@ export function BabyProvider({ children }: { children: ReactNode }) {
           return {
             id: baby._id,
             name: baby.name,
-            birthDate: baby.birthDate,
+            birthDate: new Date(baby.birthDate),
             gender: baby.gender,
             weight: baby.weight,
             height: baby.height,
@@ -116,6 +116,13 @@ export function BabyProvider({ children }: { children: ReactNode }) {
               snackType: snack.snackType,
               amount: snack.amount,
               notes: snack.notes
+            })) || [],
+            growth_tracking: baby.growth_tracking?.map((record: any) => ({
+              _id: record._id,
+              date: new Date(record.date),
+              weight: Number(record.weight),
+              height: Number(record.height),
+              notes: record.notes
             })) || []
           };
         });

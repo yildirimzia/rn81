@@ -125,6 +125,13 @@ export interface IBabyData {
         amount: string;
         notes?: string;
     }>;
+    growth_tracking?: Array<{
+        _id: string;
+        date: Date;
+        weight: number;
+        height: number;
+        notes?: string;
+    }>;
 }
 
 interface IBabyResponse {
@@ -187,6 +194,13 @@ interface IBabyResponse {
                 name: string;
             };
             amount: string;
+            notes?: string;
+        }>;
+        growth_tracking?: Array<{
+            _id: string;
+            date: Date;
+            weight: number;
+            height: number;
             notes?: string;
         }>;
     }>;

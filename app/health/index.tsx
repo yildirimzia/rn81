@@ -41,7 +41,7 @@ export default function HealthScreen() {
       icon: 'restaurant',
       route: '/health/feeding-tracker',
       gradientColors: ['#FF5722', '#E64A19'] as const
-    },
+    }
   ];
 
   return (
