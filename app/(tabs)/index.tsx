@@ -51,33 +51,69 @@ export default function HomeScreen() {
 
           {/* Bebek Ekleme Seçenekleri */}
           <View style={styles.babyOptionsContainer}>
-            {/* Tekil Bebek Kartları */}
-            <View style={styles.singleBabySection}>
-              <View style={styles.babyCardsContainer}>
-                <TouchableOpacity 
-                  style={styles.babyCard}
-                  onPress={() => router.push('/baby/female/add' as any)}
-                >
-                  <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(255, 182, 193, 0.1)' }]}>
-                    <MaterialIcons name="child-care" size={40} color="#FF69B4" />
+            <TouchableOpacity 
+              style={styles.babyCard}
+              onPress={() => router.push('/baby/female/add' as any)}
+            >
+              <LinearGradient
+                colors={['#FF6B6B', '#FFA07A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.babyCardGradient}
+              >
+                <Image 
+                  source={require('@/assets/images/baby-girl.png')} 
+                  style={styles.babyImage}
+                />
+                <View style={styles.cardOverlay}>
+                  <View style={styles.cardContent}>
+                    <View style={styles.titleContainer}>
+                      <MaterialIcons name="favorite" size={24} color="#FFF" />
+                      <ThemedText style={styles.babyCardTitle}>Kız Bebek</ThemedText>
+                    </View>
+                    <ThemedText style={styles.babyCardSubtitle}>
+                      Bebeğinizin gelişim yolculuğunu takip edin
+                    </ThemedText>
+                    <View style={styles.addButton}>
+                      <MaterialIcons name="add-circle" size={24} color="#FFF" />
+                      <ThemedText style={styles.addButtonText}>Şimdi Ekle</ThemedText>
+                    </View>
                   </View>
-                  <ThemedText style={styles.babyCardTitle}>Kız Bebek</ThemedText>
-                  <ThemedText style={styles.babyCardSubtitle}>Eklemek için dokunun</ThemedText>
-                </TouchableOpacity>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={styles.babyCard}
-                  onPress={() => router.push('/baby/male/add' as any)}
-                >
-                  <View style={[styles.babyIconContainer, { backgroundColor: 'rgba(135, 206, 235, 0.1)' }]}>
-                    <MaterialIcons name="child-care" size={40} color="#4A90E2" />
+            <TouchableOpacity 
+              style={styles.babyCard}
+              onPress={() => router.push('/baby/male/add' as any)}
+            >
+              <LinearGradient
+                colors={['#4FACFE', '#00F2FE']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.babyCardGradient}
+              >
+                <Image 
+                  source={require('@/assets/images/baby-boy.png')} 
+                  style={styles.babyImage}
+                />
+                <View style={styles.cardOverlay}>
+                  <View style={styles.cardContent}>
+                    <View style={styles.titleContainer}>
+                      <MaterialIcons name="favorite" size={24} color="#FFF" />
+                      <ThemedText style={styles.babyCardTitle}>Erkek Bebek</ThemedText>
+                    </View>
+                    <ThemedText style={styles.babyCardSubtitle}>
+                      Bebeğinizin gelişim yolculuğunu takip edin
+                    </ThemedText>
+                    <View style={styles.addButton}>
+                      <MaterialIcons name="add-circle" size={24} color="#FFF" />
+                      <ThemedText style={styles.addButtonText}>Şimdi Ekle</ThemedText>
+                    </View>
                   </View>
-                  <ThemedText style={styles.babyCardTitle}>Erkek Bebek</ThemedText>
-                  <ThemedText style={styles.babyCardSubtitle}>Eklemek için dokunun</ThemedText>
-                </TouchableOpacity>
-              </View>
-            </View>
-
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           <View>
@@ -194,96 +230,69 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   babyOptionsContainer: {
-    marginTop: 20,
-    padding: 16,
+    padding: 20,
     gap: 20,
   },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-    marginLeft: 4,
-    letterSpacing: 0.5,
-  },
-  singleBabySection: {
-    gap: 8,
-  },
-  babyCardsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  twinBabySection: {
-    gap: 8,
-  },
   babyCard: {
-    flex: 1,
-    backgroundColor: Colors.light.cardBackground,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: "#000",
+    height: 200,
+    borderRadius: 24,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 5,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
   },
-  babyIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
+  babyCardGradient: {
+    flex: 1,
+  },
+  babyImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    opacity: 0.6,
+  },
+  cardOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'flex-end',
+  },
+  cardContent: {
+    padding: 20,
+  },
+  titleContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 8,
   },
   babyCardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFF',
   },
   babyCardSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-  },
-  twinBabyCard: {
-    backgroundColor: Colors.light.cardBackground,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  twinIconsContainer: {
-    flexDirection: 'row',
-    gap: 12,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
     marginBottom: 16,
   },
-  twinIconWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
+  addButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    gap: 8,
   },
-  twinCardTitle: {
-    fontSize: 18,
+  addButtonText: {
+    color: '#FFF',
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
-  },
-  twinCardSubtitle: {
-    fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
   },
   section: {
     padding: 16,
