@@ -100,7 +100,7 @@ export default function HomeScreen() {
                 <View style={styles.cardOverlay}>
                   <View style={styles.cardContent}>
                     <View style={styles.titleContainer}>
-                      <MaterialIcons name="favorite" size={24} color="#FFF" />
+                      <MaterialIcons name="stars" size={24} color="#FFF" />
                       <ThemedText style={styles.babyCardTitle}>Erkek Bebek</ThemedText>
                     </View>
                     <ThemedText style={styles.babyCardSubtitle}>
