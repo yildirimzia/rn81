@@ -80,6 +80,36 @@ export default function HomeScreen() {
 
           </View>
 
+          <View>
+
+          <TouchableOpacity 
+                style={styles.aiAssistantCard} 
+                onPress={() => router.push('/health/ai-assistant')}
+              >
+                <LinearGradient
+                  colors={['#7F00FF', '#E100FF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.aiGradient}
+                >
+                  <View style={styles.aiContent}>
+                    <View style={styles.aiIconContainer}>
+                      <MaterialIcons name="psychology" size={32} color="#FFF" />
+                    </View>
+                    <View style={styles.aiTextContainer}>
+                      <ThemedText style={styles.aiTitle}>AI Asistan</ThemedText>
+                      <ThemedText style={styles.aiSubtitle}>
+                        Bebeğiniz için akıllı öneriler ve yanıtlar
+                      </ThemedText>
+                    </View>
+                    <View style={styles.aiBadge}>
+                      <ThemedText style={styles.aiBadgeText}>Yeni</ThemedText>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+          </View>
+
           {/* Gelişim Takibi Bölümü */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -119,6 +149,7 @@ export default function HomeScreen() {
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#999" />
               </TouchableOpacity>
+
             </View>
           </View>
 
@@ -297,5 +328,58 @@ const styles = StyleSheet.create({
   developmentSubtitle: {
     fontSize: 13,
     color: '#666',
+  },
+  aiAssistantCard: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderRadius: 16,
+    elevation: 4,
+    shadowColor: '#7F00FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  aiGradient: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  aiContent: {
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiTextContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  aiTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  aiSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  aiBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    marginLeft: 8,
+  },
+  aiBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

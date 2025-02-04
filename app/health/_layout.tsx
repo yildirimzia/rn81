@@ -454,6 +454,22 @@ export default function HealthLayout() {
             )
           }}
         />
+         <Stack.Screen 
+          name="ai-assistant/index"
+          options={{
+            title: 'AI Asistan',
+            headerShadowVisible: false,
+            headerBackTitle: 'Sağlık',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );
