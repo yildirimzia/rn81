@@ -26,15 +26,23 @@ export default function BabiesScreen() {
           gender: baby.gender,
           weight: baby.weight,
           height: baby.height,
-          photo: baby.photo
+          photo: baby.photo,
+          snacks: [],
+          breast_milk: [],
+          formula: [],
+          solid_food: [],
+          water: [],
+          supplement: [],
+          growth_tracking: [],
+          vaccine_information: [],
+          allergy_information: [],
+          teeth_information: []
         })));
       }
     } catch (error) {
       console.error('Bebekler yüklenirken hata:', error);
     }
   };
-
-
 
   useEffect(() => {
     fetchBabies();

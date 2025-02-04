@@ -18,33 +18,8 @@ const formatName = (name: string | undefined) => {
 };
 
 const GrowthTrackerScreen = () => {
-  const { babies, fetchBabies } = useBabyContext();
-  const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
-  const [records, setRecords] = useState<any[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const loadData = async () => {
-    try {
-      setRefreshing(true);
-      await fetchBabies();
-      if (expandedBaby) {
-        const response = await growthApi.getRecords(expandedBaby);
-        if (response.data?.records) {
-          setRecords(response.data.records);
-        }
-      }
-    } catch (error) {
-      console.error('Veriler yüklenirken hata:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadData();
-    }, [expandedBaby])
-  );
+    const { babies, fetchBabies } = useBabyContext();
+    const [expandedBaby, setExpandedBaby] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -66,7 +41,7 @@ const GrowthTrackerScreen = () => {
           onPress: async () => {
             try {
               await growthApi.deleteRecord(babyId, recordId);
-              loadData(); // Silme işleminden sonra verileri yenile
+              await fetchBabies();
             } catch (error) {
               Alert.alert('Hata', 'Büyüme kaydı silinirken bir hata oluştu');
             }
@@ -81,7 +56,7 @@ const GrowthTrackerScreen = () => {
     setExpandedBaby(expandedBaby === babyId ? null : babyId);
   };
 
-  const renderGrowthHistory = (babyId: string | undefined) => {
+  const renderGrowthHistory = (records: any[], babyId: string | undefined) => {
     if (!babyId) return null;
     if (!records || records.length === 0) {
       return (
@@ -191,7 +166,7 @@ const GrowthTrackerScreen = () => {
                   </View>
 
                   <View style={styles.recordList}>
-                    {baby.id && renderGrowthHistory(baby.id)}
+                    {baby.id && renderGrowthHistory(baby.growth_tracking || [], baby.id)}
                   </View>
                 </View>
               )}
