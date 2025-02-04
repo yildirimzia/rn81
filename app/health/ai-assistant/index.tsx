@@ -81,19 +81,13 @@ const AiAssistantScreen = () => {
             }
             
             const ageInMonths = calculateAgeInMonths(new Date(baby.birthDate));
-            console.log('İstek gönderiliyor:', {
-                question: inputText,
-                babyAge: ageInMonths,
-                babyGender: baby.gender
-            });
+        
 
             const response = await aiApi.getResponse({
                 question: inputText,
                 babyAge: ageInMonths,
                 babyGender: baby.gender || 'male'
             });
-
-            console.log('API yanıtı:', response);
 
             if (response.data?.success) {
                 const assistantMessage: Message = {

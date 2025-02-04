@@ -470,6 +470,22 @@ export default function HealthLayout() {
             )
           }}
         />
+        <Stack.Screen 
+          name="development-guide/index"
+          options={{
+            title: 'Gelişim Rehberi',
+            headerShadowVisible: false,
+            headerBackTitle: 'Sağlık',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ marginLeft: 10 }}
+              >
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+            )
+          }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

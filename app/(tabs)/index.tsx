@@ -141,7 +141,10 @@ export default function HomeScreen() {
                 <MaterialIcons name="chevron-right" size={24} color="#999" />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.developmentItem}>
+              <TouchableOpacity 
+                style={styles.developmentItem}
+                onPress={() => router.push('/health/development-guide')}
+              >
                 <MaterialIcons name="menu-book" size={24} color={Colors[colorScheme ?? 'light'].tint} />
                 <View style={styles.developmentContent}>
                   <ThemedText style={styles.developmentTitle}>Gelişim Rehberi</ThemedText>
