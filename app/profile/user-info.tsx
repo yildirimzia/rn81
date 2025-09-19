@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 import { authApi } from '@/services/api/auth';
@@ -19,6 +20,11 @@ export default function UserInfoScreen() {
   });
 
   const handleSubmit = async () => {
+    if (!formData.name.trim()) {
+      Alert.alert('Hata', 'Ad alanı boş bırakılamaz');
+      return;
+    }
+
     try {
       const response = await authApi.updateUserInfo({
         name: formData.name,
@@ -31,103 +37,109 @@ export default function UserInfoScreen() {
           name: formData.name,
           gender: formData.gender,
         });
-        router.back();
+        Alert.alert('Başarılı', 'Bilgileriniz güncellendi', [
+          { text: 'Tamam', onPress: () => router.back() }
+        ]);
       } else {
-        console.error('Failed to update user info');
+        Alert.alert('Hata', 'Bilgiler güncellenirken bir hata oluştu');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      Alert.alert('Hata', 'Bir bağlantı hatası oluştu');
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <ScrollView 
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Name Input */}
+            <View style={styles.inputSection}>
               <ThemedText style={styles.label}>Ad*</ThemedText>
-              <TextInput 
-                style={styles.input}
-                value={formData.name}
-                onChangeText={(text) => setFormData({...formData, name: text})}
-                placeholder="Ad"
-                placeholderTextColor="#999"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <ThemedText style={styles.label}>E-posta*</ThemedText>
-              <TextInput 
-                style={[styles.input, { backgroundColor: '#f5f5f5' }]}
-                value={formData.email}
-                editable={false}
-                placeholder="E-posta"
-                placeholderTextColor="#999"
-              />
-            </View>
-
-            <View style={styles.genderContainer}>
-              <ThemedText style={styles.label}>Cinsiyet</ThemedText>
-              <View style={styles.genderRowContainer}>
-                <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setFormData({...formData, gender: 'female'})}
-                >
-                  <MaterialIcons 
-                    name={formData.gender === 'female' ? 'radio-button-on' : 'radio-button-off'} 
-                    size={24} 
-                    color={formData.gender === 'female' ? Colors.light.tint : '#666'} 
-                  />
-                  <ThemedText style={styles.genderText}>Kadın</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setFormData({...formData, gender: 'male'})}
-                >
-                  <MaterialIcons 
-                    name={formData.gender === 'male' ? 'radio-button-on' : 'radio-button-off'} 
-                    size={24} 
-                    color={formData.gender === 'male' ? Colors.light.tint : '#666'} 
-                  />
-                  <ThemedText style={styles.genderText}>Erkek</ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setFormData({...formData, gender: 'not_specified'})}
-                >
-                  <MaterialIcons 
-                    name={formData.gender === 'not_specified' ? 'radio-button-on' : 'radio-button-off'} 
-                    size={24} 
-                    color={formData.gender === 'not_specified' ? Colors.light.tint : '#666'} 
-                  />
-                  <ThemedText style={styles.genderText}>Belirtmek istemiyorum</ThemedText>
-                </TouchableOpacity>
+              <View style={styles.inputContainer}>
+                <MaterialIcons name="person" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput 
+                  style={styles.input}
+                  value={formData.name}
+                  onChangeText={(text) => setFormData({...formData, name: text})}
+                  placeholder="Adınızı girin"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="words"
+                />
               </View>
             </View>
-          </View>
-        </ScrollView>
 
-        <TouchableOpacity 
-          style={styles.submitButton} 
-          onPress={handleSubmit}
-        >
-          <ThemedText style={styles.buttonText}>GÖNDER</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-    </SafeAreaView>
+            {/* Email Input */}
+            <View style={styles.inputSection}>
+              <ThemedText style={styles.label}>E-posta*</ThemedText>
+              <View style={[styles.inputContainer, styles.disabledContainer]}>
+                <MaterialIcons name="email" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput 
+                  style={[styles.input, styles.disabledInput]}
+                  value={formData.email}
+                  editable={false}
+                  placeholder="E-posta adresinizi girin"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+
+            {/* Gender Selection */}
+            <View style={styles.genderSection}>
+              <ThemedText style={styles.label}>Cinsiyet</ThemedText>
+              
+              <TouchableOpacity 
+                style={[styles.genderCard, formData.gender === 'female' && styles.genderCardSelected]}
+                onPress={() => setFormData({...formData, gender: 'female'})}
+              >
+                <View style={[styles.radioButton, formData.gender === 'female' && styles.radioButtonSelected]} />
+                <ThemedText style={[styles.genderText, formData.gender === 'female' && styles.genderTextSelected]}>Kadın</ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.genderCard, formData.gender === 'male' && styles.genderCardSelected]}
+                onPress={() => setFormData({...formData, gender: 'male'})}
+              >
+                <View style={[styles.radioButton, formData.gender === 'male' && styles.radioButtonSelected]} />
+                <ThemedText style={[styles.genderText, formData.gender === 'male' && styles.genderTextSelected]}>Erkek</ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.genderCard, formData.gender === 'not_specified' && styles.genderCardSelected]}
+                onPress={() => setFormData({...formData, gender: 'not_specified'})}
+              >
+                <View style={[styles.radioButton, formData.gender === 'not_specified' && styles.radioButtonSelected]} />
+                <ThemedText style={[styles.genderText, formData.gender === 'not_specified' && styles.genderTextSelected]}>Belirtmek istemiyorum</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+
+          {/* Submit Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.submitButton} 
+              onPress={handleSubmit}
+            >
+              <ThemedText style={styles.buttonText}>Gönder</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F5F5F5',
+  },
+  safeArea: {
+    flex: 1,
   },
   content: {
     flex: 1,
@@ -136,71 +148,140 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#E5E5E5',
   },
   backButton: {
     padding: 8,
   },
-  placeholder: {
-    width: 40,
-  },
   title: {
     fontSize: 18,
     fontWeight: '600',
+    color: '#000',
+  },
+  placeholder: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 100,
   },
-  form: {
-    padding: 16,
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
+  inputSection: {
+    marginBottom: 24,
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '400',
+    color: '#9CA3AF',
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  disabledContainer: {
+    backgroundColor: '#F9FAFB',
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    flex: 1,
     fontSize: 16,
+    color: '#374151',
+    paddingVertical: 0,
   },
-  genderContainer: {
-    marginVertical: 10,
+  disabledInput: {
+    color: '#9CA3AF',
   },
-  genderRowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+  genderSection: {
     marginTop: 8,
-    gap: 24,
   },
-  genderOption: {
+  genderCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginHorizontal: 2,
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  genderCardSelected: {
+    borderWidth: 2,
+    borderColor: '#5B8DEF',
+  },
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    backgroundColor: 'transparent',
+    marginRight: 16,
+  },
+  radioButtonSelected: {
+    borderColor: '#5B8DEF',
+    backgroundColor: '#5B8DEF',
   },
   genderText: {
-    fontSize: 13,
-    color: '#333',
-    flexShrink: 1,
+    fontSize: 16,
+    color: '#374151',
+  },
+  genderTextSelected: {
+    color: '#5B8DEF',
+    fontWeight: '500',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#F5F5F5',
   },
   submitButton: {
-    backgroundColor: Colors.light.tint,
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#5B8DEF',
+    paddingVertical: 16,
+    borderRadius: 25,
     alignItems: 'center',
+    shadowColor: '#5B8DEF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   buttonText: {
-    color: 'white',
+    color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
   },

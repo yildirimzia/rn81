@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert, Text, ScrollView } from 'react-native';
+import { useState, useRef } from 'react';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Alert, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { authApi } from '@/services/api/auth';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Link } from 'expo-router';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -13,6 +16,12 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
+  const confirmPasswordInputRef = useRef<TextInput>(null);
   const [gender, setGender] = useState<'male' | 'female' | 'not_specified'>('not_specified');
   const [isAgreementAccepted, setIsAgreementAccepted] = useState(false);
   
@@ -119,351 +128,442 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        <TouchableOpacity 
-          style={styles.closeButton} 
-          onPress={() => router.back()}
-        >
-          <Ionicons name="close" size={24} color="#000" />
-        </TouchableOpacity>
+    <LinearGradient 
+      colors={['#E8EFFF', '#F0F4FF', '#FFFFFF']} 
+      style={styles.container}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <TouchableOpacity 
+            style={styles.closeButton} 
+            onPress={() => router.back()}
+          >
+            <MaterialIcons name="close" size={24} color="#2D3748" />
+          </TouchableOpacity>
 
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <ThemedText style={styles.title}>Hesap Oluştur</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Hemen ücretsiz hesabınızı oluşturun
-          </ThemedText>
-
-          <View style={styles.form}>
-            <View>
-              <TextInput 
-                placeholder="Ad Soyad"
-                style={[styles.input, nameError && styles.inputError]}
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={(text) => {
-                  setName(text);
-                  setNameError('');
-                }}
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                textContentType="name"
-                autoComplete="name"
-              />
-              {nameError ? <ThemedText style={styles.errorText}>{nameError}</ThemedText> : null}
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Logo ve başlık bölümü */}
+            <View style={styles.logoSection}>
+              {/* <View style={styles.logoContainer}>
+                <MaterialIcons name="child-care" size={60} color="#5B8DEF" />
+              </View> */}
+              <ThemedText style={styles.appSubtitle}>Hemen ücretsiz hesabınızı oluşturun</ThemedText>
             </View>
 
-            <View>
-              <TextInput 
-                placeholder="E-posta"
-                style={[styles.input, emailError && styles.inputError]}
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  setEmailError('');
-                }}
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                textContentType="emailAddress"
-                autoComplete="email"
-              />
-              {emailError ? <ThemedText style={styles.errorText}>{emailError}</ThemedText> : null}
-            </View>
+            {/* Form bölümü */}
+            <View style={styles.formSection}>
+              {/* Ad Soyad input */}
+              <View style={styles.inputContainer}>
+                <TextInput 
+                  placeholder="Ad Soyad"
+                  style={[styles.input, nameError && styles.inputError]}
+                  placeholderTextColor="#B8B8B8"
+                  value={name}
+                  onChangeText={(text) => {
+                    setName(text);
+                    setNameError('');
+                  }}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  spellCheck={false}
+                  textContentType="name"
+                  autoComplete="name"
+                  returnKeyType="next"
+                  onSubmitEditing={() => emailInputRef.current?.focus()}
+                />
+              </View>
+              {nameError ? <ThemedText style={styles.error}>{nameError}</ThemedText> : null}
 
-            <View>
-              <TextInput 
-                placeholder="Şifre"
-                style={[styles.input, passwordError && styles.inputError]}
-                secureTextEntry
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setPasswordError('');
-                }}
-              />
-              {passwordError ? <ThemedText style={styles.errorText}>{passwordError}</ThemedText> : null}
-            </View>
+              {/* E-posta input */}
+              <View style={styles.inputContainer}>
+                <TextInput 
+                  ref={emailInputRef}
+                  placeholder="E-posta"
+                  style={[styles.input, emailError && styles.inputError]}
+                  placeholderTextColor="#B8B8B8"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    setEmailError('');
+                  }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  spellCheck={false}
+                  textContentType="emailAddress"
+                  autoComplete="email"
+                  returnKeyType="next"
+                  onSubmitEditing={() => passwordInputRef.current?.focus()}
+                />
+              </View>
+              {emailError ? <ThemedText style={styles.error}>{emailError}</ThemedText> : null}
 
-            <View>
-              <TextInput 
-                placeholder="Şifre Tekrar"
-                style={[styles.input, confirmPasswordError && styles.inputError]}
-                secureTextEntry
-                placeholderTextColor="#999"
-                value={confirmPassword}
-                onChangeText={(text) => {
-                  setConfirmPassword(text);
-                  setConfirmPasswordError('');
-                }}
-              />
-              {confirmPasswordError ? <ThemedText style={styles.errorText}>{confirmPasswordError}</ThemedText> : null}
-            </View>
-
-            <View style={styles.genderContainer}>
-              <View style={styles.genderRowContainer}>
+              {/* Şifre input */}
+              <View style={styles.inputContainer}>
+                <TextInput 
+                  ref={passwordInputRef}
+                  placeholder="Şifre"
+                  style={[styles.input, passwordError && styles.inputError]}
+                  secureTextEntry={!showPassword}
+                  placeholderTextColor="#B8B8B8"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setPasswordError('');
+                  }}
+                  returnKeyType="next"
+                  onSubmitEditing={() => confirmPasswordInputRef.current?.focus()}
+                />
                 <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setGender('female')}
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
                 >
-                  <Ionicons 
-                    name={gender === 'female' ? 'radio-button-on' : 'radio-button-off'} 
+                  <MaterialIcons 
+                    name={showPassword ? "visibility" : "visibility-off"} 
                     size={24} 
-                    color={gender === 'female' ? '#007AFF' : '#666'} 
+                    color="#B8B8B8" 
                   />
-                  <Text style={styles.genderText}>Kadın</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setGender('male')}
-                >
-                  <Ionicons 
-                    name={gender === 'male' ? 'radio-button-on' : 'radio-button-off'} 
-                    size={24} 
-                    color={gender === 'male' ? '#007AFF' : '#666'} 
-                  />
-                  <Text style={styles.genderText}>Erkek</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.genderOption}
-                  onPress={() => setGender('not_specified')}
-                >
-                  <Ionicons 
-                    name={gender === 'not_specified' ? 'radio-button-on' : 'radio-button-off'} 
-                    size={24} 
-                    color={gender === 'not_specified' ? '#007AFF' : '#666'} 
-                  />
-                  <Text style={styles.genderText}>Belirtmek istemiyorum</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+              {passwordError ? <ThemedText style={styles.error}>{passwordError}</ThemedText> : null}
 
-            <View style={styles.kvkkContainer}>
-              <Ionicons name="information-circle-outline" size={20} color="#666" />
-              <Text style={styles.kvkkText}>
-                Kişisel verilerinizin işlenmesi hakkında detaylı bilgiye{' '}
-                <Text 
-                  style={styles.kvkkLink}
+              {/* Şifre Tekrar input */}
+              <View style={styles.inputContainer}>
+                <TextInput 
+                  ref={confirmPasswordInputRef}
+                  placeholder="Şifre Tekrar"
+                  style={[styles.input, confirmPasswordError && styles.inputError]}
+                  secureTextEntry={!showConfirmPassword}
+                  placeholderTextColor="#B8B8B8"
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    setConfirmPasswordError('');
+                  }}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity 
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <MaterialIcons 
+                    name={showConfirmPassword ? "visibility" : "visibility-off"} 
+                    size={24} 
+                    color="#B8B8B8" 
+                  />
+                </TouchableOpacity>
+              </View>
+              {confirmPasswordError ? <ThemedText style={styles.error}>{confirmPasswordError}</ThemedText> : null}
+
+              {/* Cinsiyet seçimi */}
+              <View style={styles.genderContainer}>
+                <ThemedText style={styles.genderLabel}>Cinsiyet</ThemedText>
+                <View style={styles.genderRowContainer}>
+                  <TouchableOpacity 
+                    style={styles.genderOption}
+                    onPress={() => setGender('male')}
+                  >
+                    <View style={[styles.radioButton, gender === 'male' && styles.radioButtonSelected]} />
+                    <Text style={styles.genderText}>Erkek</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.genderOption}
+                    onPress={() => setGender('female')}
+                  >
+                    <View style={[styles.radioButton, gender === 'female' && styles.radioButtonSelected]} />
+                    <Text style={styles.genderText}>Kadın</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.genderOption}
+                    onPress={() => setGender('not_specified')}
+                  >
+                    <View style={[styles.radioButton, gender === 'not_specified' && styles.radioButtonSelected]} />
+                    <Text style={styles.genderText}>Belirtmek istemiyorum</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* KVKK Bilgilendirme */}
+              <View style={styles.kvkkContainer}>
+                <MaterialIcons name="info-outline" size={20} color="#5B8DEF" />
+                <Text style={styles.kvkkText}>
+                  Kişisel verilerinizin işlenmesi hakkında detaylı bilgiye{' '}
+                  <Text 
+                    style={styles.kvkkLink}
+                    onPress={() => {
+                      router.push('/legal/kvkk');
+                    }}
+                  >
+                    Web Sitesi Müşteri Aydınlatma Metni
+                  </Text>
+                  'nden ulaşabilirsiniz.
+                </Text>
+              </View>
+
+              {/* Sözleşme onayı */}
+              <View style={styles.agreementContainer}>
+                <TouchableOpacity 
+                  style={styles.checkbox}
                   onPress={() => {
-                    router.push('/legal/kvkk');
+                    setIsAgreementAccepted(!isAgreementAccepted);
+                    setShowAgreementError(false);
                   }}
                 >
-                  Web Sitesi Müşteri Aydınlatma Metni
+                  <MaterialIcons 
+                    name={isAgreementAccepted ? "check-box" : "check-box-outline-blank"} 
+                    size={20} 
+                    color={isAgreementAccepted ? "#5B8DEF" : "#B8B8B8"}
+                  />
+                </TouchableOpacity>
+                <Text style={styles.agreementText}>
+                  Web sitesi{' '}
+                  <Text 
+                    style={styles.agreementLink} 
+                    onPress={() => router.push('/legal/agreement')}
+                  >
+                    üyelik sözleşmesini
+                  </Text>
+                  {' '}okudum, onaylıyorum.
                 </Text>
-                'nden ulaşabilirsiniz.
-              </Text>
+              </View>
+              {showAgreementError && <Text style={styles.error}>Lütfen üyelik sözleşmesini onaylayın</Text>}
             </View>
 
-            <View style={styles.agreementContainer}>
-              <TouchableOpacity 
-                style={styles.checkbox}
-                onPress={() => {
-                  setIsAgreementAccepted(!isAgreementAccepted);
-                  setShowAgreementError(false);
-                }}
-              >
-                <Ionicons 
-                  name={isAgreementAccepted ? "checkbox" : "square-outline"} 
-                  size={20} 
-                  color={isAgreementAccepted ? "#4285F4" : "#666"}
-                />
-              </TouchableOpacity>
-              <Text style={styles.agreementText}>
-                Web sitesi{' '}
-                <Text 
-                  style={styles.agreementLink} 
-                  onPress={() => router.push('/legal/agreement')}
-                >
-                  üyelik sözleşmesini
-                </Text>
-                {' '}okudum, onaylıyorum.
-              </Text>
-            </View>
-            {showAgreementError && <Text style={styles.errorText}>Lütfen üyelik sözleşmesini onaylayın</Text>}
+            {/* Kayıt butonu */}
             <TouchableOpacity 
               style={[styles.registerButton, loading && styles.disabledButton]} 
               onPress={handleRegister}
               disabled={loading}
             >
-              <ThemedText style={styles.buttonText}>
-                {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
-              </ThemedText>
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <ThemedText style={styles.buttonText}>Kayıt Ol</ThemedText>
+              )}
             </TouchableOpacity>
-          </View>
 
-          <View style={styles.footer}>
-            <ThemedText>Zaten hesabınız var mı? </ThemedText>
-            <TouchableOpacity onPress={() => {
-              router.back()
-            }}>
-              <ThemedText style={styles.link}>Giriş Yap</ThemedText>
-            </TouchableOpacity>
-          </View>
+            {/* Alt footer */}
+            <View style={styles.footer}>
+              <ThemedText style={styles.footerText}>Zaten hesabınız var mı? </ThemedText>
+              <TouchableOpacity onPress={() => {
+                router.back()
+              }}>
+                <ThemedText style={styles.link}>Giriş Yap</ThemedText>
+              </TouchableOpacity>
+            </View>
 
-          {generalError ? (
-            <ThemedText style={styles.errorText}>{generalError}</ThemedText>
-          ) : null}
-        </ScrollView>
-      </ThemedView>
-    </SafeAreaView>
+            {generalError ? (
+              <ThemedText style={styles.error}>{generalError}</ThemedText>
+            ) : null}
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+  },
+  safeArea: {
+    flex: 1,
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 32,
+    justifyContent: 'center',
   },
   closeButton: {
     alignSelf: 'flex-end',
     padding: 8,
     marginTop: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 40,
+    marginTop: 20,
+  },
+  logoContainer: {
+    width: 100,
+    height: 100,
+    backgroundColor: 'rgba(91, 141, 239, 0.15)',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  appTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#2D3748',
     marginBottom: 8,
   },
-  subtitle: {
+  appSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#718096',
     textAlign: 'center',
+  },
+  formSection: {
     marginBottom: 32,
   },
-  form: {
-    gap: 11,
+  inputContainer: {
+    position: 'relative',
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: '#F5F5F5',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 16,
     fontSize: 16,
-  },
-  registerButton: {
-    backgroundColor: '#4285F4',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  link: {
-    color: '#4285F4',
-    fontWeight: '600',
-  },
-  googleButton: {
-    padding: 16,
-    borderRadius: 12,
+    color: '#2D3748',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  googleIcon: {
-    width: 24,
-    height: 24,
-  },
-  disabledButton: {
-    opacity: 0.7
+    borderColor: 'rgba(255, 255, 255, 0.8)',
   },
   inputError: {
-    borderColor: '#FF3B30',
-    borderWidth: 1,
+    borderColor: '#E53E3E',
+    backgroundColor: 'rgba(254, 243, 243, 0.9)',
   },
-  errorText: {
-    color: '#FF3B30',
+  eyeButton: {
+    position: 'absolute',
+    right: 20,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+  },
+  error: {
+    color: '#E53E3E',
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
   },
   genderContainer: {
-    marginVertical: 10,
+    marginBottom: 20,
+  },
+  genderLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 12,
   },
   genderRowContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    marginTop: 8,
+    alignItems: 'center',
     gap: 24,
+    marginTop: 8,
   },
   genderOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginHorizontal: 2,
+  },
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    backgroundColor: 'transparent',
+    marginRight: 8,
+  },
+  radioButtonSelected: {
+    borderColor: '#5B8DEF',
+    backgroundColor: '#5B8DEF',
+    position: 'relative',
   },
   genderText: {
-    fontSize: 13,
-    color: '#333',
-    flexShrink: 1,
-  },
-  label: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: 14,
+    color: '#374151',
   },
   kvkkContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    marginVertical: 8,
-    gap: 8,
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(91, 141, 239, 0.05)',
+    padding: 16,
+    borderRadius: 12,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(91, 141, 239, 0.2)',
   },
   kvkkText: {
     flex: 1,
     fontSize: 12,
-    color: '#666',
+    color: '#4A5568',
     lineHeight: 18,
+    marginLeft: 8,
   },
   kvkkLink: {
-    color: '#4285F4',
-    textDecorationLine: 'underline',
+    color: '#5B8DEF',
+    fontWeight: '600',
   },
   agreementContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 8,
-    gap: 8,
+    marginVertical: 16,
+    
   },
   checkbox: {
     padding: 2,
   },
   agreementText: {
     flex: 1,
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: '#4A5568',
+    lineHeight: 18,
+    marginLeft: 8,
   },
   agreementLink: {
-    color: '#4285F4',
-    textDecorationLine: 'underline',
+    color: '#5B8DEF',
+    fontWeight: '600',
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
+  registerButton: {
+    backgroundColor: '#5B8DEF',
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginTop: 24,
+    marginBottom: 20,
+    shadowColor: '#5B8DEF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#718096',
+  },
+  link: {
+    fontSize: 14,
+    color: '#5B8DEF',
+    fontWeight: '600',
   },
 }); 

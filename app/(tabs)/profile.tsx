@@ -90,26 +90,24 @@ export default function ProfileScreen() {
     }
   };
 
-  const MenuItem = ({ icon, title, onPress, color = tintColor, danger = false }: MenuItemProps) => (
+  const MenuItem = ({ icon, title, onPress, color = '#374151', danger = false }: MenuItemProps) => (
     <Pressable 
       style={[styles.menuItem, danger && styles.dangerItem]} 
       onPress={onPress}
     >
-      <View style={styles.menuIconContainer}>
-        <MaterialIcons name={icon} size={22} color={danger ? Colors.danger : color} />
-      </View>
       <ThemedText style={[styles.menuText, danger && styles.dangerText]}>{title}</ThemedText>
-      <MaterialIcons name="chevron-right" size={24} color="#999" />
+      <MaterialIcons name="chevron-right" size={20} color={danger ? '#EF4444' : '#9CA3AF'} />
     </Pressable>
   );
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <LinearGradient
-          colors={[Colors[colorScheme ?? 'light'].tint, '#4A90E2']}
-          style={styles.headerGradient}
-        >
+      <LinearGradient
+        colors={['#B8B5FF', '#E8EFFF', '#FFFFFF']}
+        style={styles.gradientBackground}
+      >
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Header with avatar */}
           <View style={styles.header}>
             <Pressable 
               style={styles.avatarContainer}
@@ -122,27 +120,35 @@ export default function ProfileScreen() {
                 </View>
               ) : user?.avatar?.url ? (
                 <>
-                  <Image source={{ uri: user.avatar.url }} style={styles.avatar} />
-                  <View style={styles.editIconContainer}>
-                    <MaterialIcons name="edit" size={16} color="#FFF" />
+                  <View style={styles.avatarWrapper}>
+                    <Image source={{ uri: user.avatar.url }} style={styles.avatar} />
+                  </View>
+                  <View style={styles.cameraIconContainer}>
+                    <MaterialIcons name="camera-alt" size={20} color="#FFF" />
                   </View>
                 </>
               ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <MaterialIcons name="camera-alt" size={30} color="#FFF" />
-                </View>
+                <>
+                  <View style={styles.avatarWrapper}>
+                    <View style={styles.avatarPlaceholder}>
+                      <MaterialIcons name="person" size={60} color="#D1D5DB" />
+                    </View>
+                  </View>
+                  <View style={styles.cameraIconContainer}>
+                    <MaterialIcons name="camera-alt" size={20} color="#FFF" />
+                  </View>
+                </>
               )}
             </Pressable>
             <ThemedText style={styles.name}>{user?.name}</ThemedText>
             <ThemedText style={styles.email}>{user?.email}</ThemedText>
           </View>
-        </LinearGradient>
 
-        <View style={styles.menuWrapper}>
-          <View style={styles.menuContainer}>
+          {/* Main menu section */}
+          <View style={styles.menuSection}>
             <MenuItem 
               icon="person" 
-              title="Kişisel Bilgilerim"
+              title="Kişisel Bilgiler"
               onPress={() => {router.push('/profile/user-info');}} 
             />
             <MenuItem 
@@ -162,17 +168,55 @@ export default function ProfileScreen() {
             />
             <MenuItem 
               icon="notifications" 
-              title="Bildirim Ayarlarım"
+              title="Bildirim Ayarları"
               onPress={() => {}} 
             />
           </View>
 
-          <View style={styles.menuContainer}>
+          {/* Rating section */}
+          <View style={styles.ratingSection}>
+            <ThemedText style={styles.ratingTitle}>Uygulamayı Sevdiniz mi?</ThemedText>
+            <ThemedText style={styles.ratingSubtitle}>
+              Bize destek olmak için puan verin veya arkadaşlarınızla paylaşın!
+            </ThemedText>
+            <View style={styles.ratingButtons}>
+              <TouchableOpacity 
+                style={styles.ratingButton}
+                onPress={async () => {
+                  if (await StoreReview.hasAction()) {
+                    await StoreReview.requestReview();
+                  }
+                }}
+              >
+                <MaterialIcons name="star" size={20} color="#5B8DEF" />
+                <ThemedText style={styles.ratingButtonText}>Puan Ver</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.shareButton}
+                onPress={() => {
+                  Share.share({
+                    message: 'Bu uygulamayı çok beğendim, siz de denemelisiniz!',
+                    url: 'https://your-app-store-link.com',
+                    title: 'Harika bir uygulama!'
+                  });
+                }}
+              >
+                <MaterialIcons name="share" size={20} color="#5B8DEF" />
+                <ThemedText style={styles.shareButtonText}>Paylaş</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Bottom menu section */}
+          <View style={styles.menuSection}>
             <MenuItem 
               icon="info" 
               title="Hakkımızda"
               onPress={() => router.push('/legal/agreement')} 
             />
+          </View>
+
+          <View style={styles.menuSection}>
             <MenuItem 
               icon="cancel" 
               title="Üyeliği İptal Et"
@@ -186,48 +230,8 @@ export default function ProfileScreen() {
               danger
             />
           </View>
-
-          <View style={styles.ratingContainer}>
-            <View style={styles.ratingContent}>
-              <View style={styles.ratingIconContainer}>
-                <MaterialIcons name="star" size={32} color="#FFD700" />
-              </View>
-              <View style={styles.ratingTextContainer}>
-                <ThemedText style={styles.ratingTitle}>Uygulamayı Değerlendirin</ThemedText>
-                <ThemedText style={styles.ratingSubtitle}>
-                  Uygulamayı beğendiyseniz değerlendirmeyi unutmayın
-                </ThemedText>
-              </View>
-            </View>
-            <View style={styles.ratingButtonsContainer}>
-              <TouchableOpacity 
-                style={[styles.ratingButton, styles.ratingButtonOutline]} 
-                onPress={async () => {
-                  if (await StoreReview.hasAction()) {
-                    await StoreReview.requestReview();
-                  }
-                }}
-              >
-                <MaterialIcons name="star-outline" size={24} color={Colors[colorScheme ?? 'light'].tint} />
-                <ThemedText style={styles.ratingButtonText}>Uygulamaya Not Verin</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.ratingButton, styles.ratingButtonFilled]}
-                onPress={() => {
-                  Share.share({
-                    message: 'Bu uygulamayı çok beğendim, siz de denemelisiniz!',
-                    url: 'https://your-app-store-link.com', // App Store/Play Store linkiniz
-                    title: 'Harika bir uygulama!'
-                  });
-                }}
-              >
-                <MaterialIcons name="share" size={24} color="#FFF" />
-                <ThemedText style={styles.ratingButtonFilledText}>Uygulamayı Tavsiye Edin</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </LinearGradient>
     </ThemedView>
   );
 }
@@ -236,171 +240,170 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gradientBackground: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
-  headerGradient: {
-    paddingTop: 60,
-    paddingBottom: 30,
-  },
   header: {
     alignItems: 'center',
+    paddingTop: 80,
+    paddingBottom: 60,
+    paddingHorizontal: 32,
   },
   avatarContainer: {
-    marginBottom: 16,
+    marginBottom: 24,
     position: 'relative',
   },
-  avatar: {
+  avatarWrapper: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#FFF',
+    backgroundColor: '#FFF',
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  avatar: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
   },
   avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#FFF',
+    width: 112,
+    height: 112,
+    borderRadius: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#F3F4F6',
   },
-  editIconContainer: {
+  cameraIconContainer: {
     position: 'absolute',
     right: 0,
     bottom: 0,
-    backgroundColor: Colors.light.tint,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    backgroundColor: '#5B8DEF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFF',
   },
   name: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#FFF',
+    fontWeight: '700',
+    marginBottom: 4,
+    color: '#1F2937',
+    textAlign: 'center',
   },
   email: {
     fontSize: 16,
-    color: '#FFF',
-    opacity: 0.9,
+    color: '#6B7280',
+    textAlign: 'center',
   },
-  menuWrapper: {
-    padding: 16,
-    gap: 16,
-  },
-  menuContainer: {
-    backgroundColor: Colors.light.cardBackground,
+  menuSection: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    marginBottom: 16,
     borderRadius: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   menuText: {
     flex: 1,
-    marginLeft: 12,
     fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
   },
   dangerItem: {
-    borderBottomWidth: 0,
   },
   dangerText: {
-    color: Colors.danger,
+    color: '#EF4444',
   },
-  ratingContainer: {
-    backgroundColor: Colors.light.cardBackground,
+  ratingSection: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 20,
+    marginBottom: 16,
     borderRadius: 16,
-    padding: 20,
-    marginTop: 16,
-    shadowColor: "#000",
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  ratingContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  ratingIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  ratingTextContainer: {
-    flex: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   ratingTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   ratingSubtitle: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
   },
-  ratingButtonsContainer: {
-    flexDirection: 'column',
-    gap: 8,
+  ratingButtons: {
+    flexDirection: 'row',
+    gap: 12,
   },
   ratingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 14,
-    borderRadius: 12,
-    gap: 8,
-  },
-  ratingButtonOutline: {
+    backgroundColor: '#F8FAFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.light.tint,
-  },
-  ratingButtonFilled: {
-    backgroundColor: Colors.light.tint,
+    borderColor: '#E5EDFF',
   },
   ratingButtonText: {
     fontSize: 14,
-    color: Colors.light.tint,
-    fontWeight: '500',
+    color: '#5B8DEF',
+    fontWeight: '600',
+    marginLeft: 8,
   },
-  ratingButtonFilledText: {
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5EDFF',
+  },
+  shareButtonText: {
     fontSize: 14,
-    color: '#FFF',
-    fontWeight: '500',
+    color: '#5B8DEF',
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });

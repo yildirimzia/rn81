@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -52,7 +52,7 @@ export default function ChangeEmailScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showActivationCode, setShowActivationCode] = useState(false);
   const [formData, setFormData] = useState({
     newEmail: '',
@@ -62,38 +62,49 @@ export default function ChangeEmailScreen() {
   });
 
   const handleSubmit = async () => {
+    // Validations
+    if (!formData.newEmail.trim()) {
+      setError('Yeni e-posta alanı boş bırakılamaz');
+      return;
+    }
+
+    if (!formData.confirmEmail.trim()) {
+      setError('E-posta tekrar alanı boş bırakılamaz');
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError('Şifre alanı boş bırakılamaz');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const trimmedNewEmail = formData.newEmail.trim();
+    const trimmedConfirmEmail = formData.confirmEmail.trim();
+
+    if (formData.password.length < 8) {
+      setError('Şifre en az 8 karakter olmalıdır');
+      return;
+    }
+
+    if (!emailRegex.test(trimmedNewEmail)) {
+      setError('Geçerli bir e-posta adresi giriniz');
+      return;
+    }
+
+    if (trimmedNewEmail !== trimmedConfirmEmail) {
+      setError('E-posta adresleri eşleşmiyor');
+      return;
+    }
+
+    if (trimmedNewEmail === user?.email) {
+      setError('Yeni e-posta adresi mevcut e-posta adresinizle aynı olamaz');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const trimmedNewEmail = formData.newEmail.trim();
-      const trimmedConfirmEmail = formData.confirmEmail.trim();
-
-      if (!trimmedNewEmail || !trimmedConfirmEmail || !formData.password) {
-        setError('Lütfen tüm alanları doldurunuz');
-        return;
-      }
-
-      if (formData.password.length < 8) {
-        setError('Şifre en az 8 karakter olmalıdır');
-        return;
-      }
-
-      if (!emailRegex.test(trimmedNewEmail)) {
-        setError('Geçerli bir e-posta adresi giriniz');
-        return;
-      }
-
-      if (trimmedNewEmail !== trimmedConfirmEmail) {
-        setError('E-posta adresleri eşleşmiyor');
-        return;
-      }
-
-      if (trimmedNewEmail === user?.email) {
-        setError('Yeni e-posta adresi mevcut e-posta adresinizle aynı olamaz');
-        return;
-      }
 
       const response = await authApi.requestEmailChange({
         newEmail: trimmedNewEmail,
@@ -106,109 +117,148 @@ export default function ChangeEmailScreen() {
         setError(response?.error?.message || 'E-posta değişikliği başlatılırken bir hata oluştu');
       }
     } catch (error: any) {
-      setError('Beklenmeyen bir hata oluştu, lütfen tekrar deneyin');
+      setError('Bir bağlantı hatası oluştu');
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyCode = async () => {
+    if (!formData.activationCode || formData.activationCode.length !== 4) {
+      setError('Lütfen geçerli bir aktivasyon kodu giriniz');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
-
-      if (!formData.activationCode || formData.activationCode.length !== 4) {
-        setError('Lütfen geçerli bir aktivasyon kodu giriniz');
-        return;
-      }
 
       const response = await authApi.verifyEmailChange(
         formData.newEmail,
         formData.activationCode
       );
 
-
       if (response.data?.success) {
-        setSuccess(true);
-        setShowActivationCode(false);
         updateUser({ email: formData.newEmail });
-          router.back();
+        Alert.alert('Başarılı', 'E-posta adresiniz başarıyla güncellendi', [
+          { text: 'Tamam', onPress: () => router.back() }
+        ]);
       } else {
         setError(response.data?.message || 'Aktivasyon kodu doğrulanamadı');
       }
     } catch (error: any) {
-      setError('Beklenmeyen bir hata oluştu, lütfen tekrar deneyin');
+      setError('Bir bağlantı hatası oluştu');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <View style={styles.form}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+
+        <View style={styles.content}>
+
+          <ScrollView 
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
             {!showActivationCode ? (
               <>
-                <ThemedText style={styles.label}>Kayıtlı E-posta Adresiniz</ThemedText>
-                <TextInput 
-                  style={[styles.input, { backgroundColor: '#f5f5f5' }]}
-                  value={user?.email}
-                  editable={false}
-                  placeholder="Mevcut e-posta"
-                  placeholderTextColor="#999"
-                />
-
-                <View style={styles.infoContainer}>
-                  <MaterialIcons name="info-outline" size={20} color="#666" />
-                  <ThemedText style={styles.infoText}>
-                    Değişikliği yapıp kaydet dediğinizde, tarafınıza bir onay e-postası gönderilecektir. 
-                    E-postadaki aktivasyon kodunu girerek e-posta adresinizi değiştirebilirsiniz.
-                  </ThemedText>
+                {/* Current Email Input */}
+                <View style={styles.inputSection}>
+                  <ThemedText style={styles.label}>Kayıtlı E-posta Adresiniz</ThemedText>
+                  <View style={[styles.inputContainer, styles.disabledContainer]}>
+                    <MaterialIcons name="email" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput 
+                      style={[styles.input, styles.disabledInput]}
+                      value={user?.email}
+                      editable={false}
+                      placeholder="Mevcut e-posta"
+                      placeholderTextColor="#9CA3AF"
+                    />
+                  </View>
                 </View>
 
-                <ThemedText style={styles.label}>Yeni e-posta*</ThemedText>
-                <TextInput 
-                  style={styles.input}
-                  value={formData.newEmail}
-                  onChangeText={(text) => setFormData({...formData, newEmail: text.toLowerCase()})}
-                  placeholder="Yeni e-posta adresinizi girin"
-                  placeholderTextColor="#999"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                />
+                {/* New Email Input */}
+                <View style={styles.inputSection}>
+                  <ThemedText style={styles.label}>Yeni E-posta *</ThemedText>
+                  <View style={styles.inputContainer}>
+                    <MaterialIcons name="email" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput 
+                      style={styles.input}
+                      value={formData.newEmail}
+                      onChangeText={(text) => {
+                        setFormData({...formData, newEmail: text.toLowerCase()});
+                        setError('');
+                      }}
+                      placeholder="Yeni e-posta adresinizi girin"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="email"
+                    />
+                  </View>
+                </View>
 
-                <ThemedText style={styles.label}>Yeni e-posta tekrar*</ThemedText>
-                <TextInput 
-                  style={styles.input}
-                  value={formData.confirmEmail}
-                  onChangeText={(text) => setFormData({...formData, confirmEmail: text.toLowerCase()})}
-                  placeholder="Yeni e-posta adresinizi tekrar girin"
-                  placeholderTextColor="#999"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                />
+                {/* Confirm Email Input */}
+                <View style={styles.inputSection}>
+                  <ThemedText style={styles.label}>Yeni E-posta Tekrar *</ThemedText>
+                  <View style={styles.inputContainer}>
+                    <MaterialIcons name="email" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput 
+                      style={styles.input}
+                      value={formData.confirmEmail}
+                      onChangeText={(text) => {
+                        setFormData({...formData, confirmEmail: text.toLowerCase()});
+                        setError('');
+                      }}
+                      placeholder="Yeni e-posta adresinizi tekrar girin"
+                      placeholderTextColor="#9CA3AF"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoComplete="email"
+                    />
+                  </View>
+                </View>
 
-                <ThemedText style={styles.label}>Şifre*</ThemedText>
-                <TextInput 
-                  style={styles.input}
-                  value={formData.password}
-                  onChangeText={(text) => setFormData({...formData, password: text})}
-                  placeholder="Şifrenizi girin"
-                  placeholderTextColor="#999"
-                  secureTextEntry
-                />
+                {/* Password Input */}
+                <View style={styles.inputSection}>
+                  <ThemedText style={styles.label}>Şifre *</ThemedText>
+                  <View style={styles.inputContainer}>
+                    <MaterialIcons name="lock" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                    <TextInput 
+                      style={styles.input}
+                      value={formData.password}
+                      onChangeText={(text) => {
+                        setFormData({...formData, password: text});
+                        setError('');
+                      }}
+                      placeholder="Şifrenizi girin"
+                      placeholderTextColor="#9CA3AF"
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeButton}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <MaterialIcons 
+                        name={showPassword ? "visibility" : "visibility-off"} 
+                        size={20} 
+                        color="#9CA3AF" 
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </>
             ) : (
-              <View style={styles.activationContainer}>
-                <MaterialIcons name="mail-outline" size={50} color={Colors.light.tint} />
+              <View style={styles.activationSection}>
+                <View style={styles.activationIconContainer}>
+                  <MaterialIcons name="mail-outline" size={64} color="#5B8DEF" />
+                </View>
                 <ThemedText style={styles.activationTitle}>Aktivasyon Kodu</ThemedText>
                 <ThemedText style={styles.activationDescription}>
                   {formData.newEmail} adresine gönderilen 4 haneli aktivasyon kodunu girin
@@ -216,128 +266,206 @@ export default function ChangeEmailScreen() {
                 
                 <ActivationCodeInput
                   value={formData.activationCode}
-                  onChangeText={(text) => setFormData({...formData, activationCode: text})}
+                  onChangeText={(text) => {
+                    setFormData({...formData, activationCode: text});
+                    setError('');
+                  }}
                 />
               </View>
             )}
 
-            {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
-            {success ? <ThemedText style={styles.successText}>E-posta başarıyla güncellendi</ThemedText> : null}
-          </View>
-        </ScrollView>
+            {/* Error Message */}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <ThemedText style={styles.errorText}>{error}</ThemedText>
+              </View>
+            ) : null}
+          </ScrollView>
 
-        <TouchableOpacity 
-          style={[styles.submitButton, loading && styles.disabledButton]} 
-          onPress={showActivationCode ? handleVerifyCode : handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <ThemedText style={styles.buttonText}>
-              {showActivationCode ? 'DOĞRULA' : 'KAYDET'}
-            </ThemedText>
-          )}
-        </TouchableOpacity>
-      </ThemedView>
-    </SafeAreaView>
+          {/* Submit Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.submitButton, loading && styles.disabledButton]} 
+              onPress={showActivationCode ? handleVerifyCode : handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <ThemedText style={styles.buttonText}>
+                  {showActivationCode ? 'Kodu Doğrula' : 'E-posta Güncelle'}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F5F5F5',
+  },
+  safeArea: {
+    flex: 1,
   },
   content: {
     flex: 1,
   },
-  scrollContent: {
-    flexGrow: 1,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
-  form: {
-    padding: 16,
-    gap: 16,
+  backButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  placeholder: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  inputSection: {
+    marginBottom: 24,
   },
   label: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '400',
+    color: '#9CA3AF',
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  disabledContainer: {
+    backgroundColor: '#F9FAFB',
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
-    gap: 8,
-    alignItems: 'flex-start',
-  },
-  infoText: {
     flex: 1,
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    fontSize: 16,
+    color: '#374151',
+    paddingVertical: 0,
   },
-  activationContainer: {
+  disabledInput: {
+    color: '#9CA3AF',
+  },
+  eyeButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  activationSection: {
     alignItems: 'center',
-    padding: 20,
-    gap: 16,
+    marginTop: 20,
+  },
+  activationIconContainer: {
+    marginBottom: 16,
   },
   activationTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    marginTop: 16,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   activationDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#6B7280',
     textAlign: 'center',
     marginBottom: 24,
+    lineHeight: 20,
   },
   codeContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
-    marginTop: 20,
+    gap: 12,
+    marginTop: 8,
   },
   codeInput: {
-    width: 50,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    width: 56,
+    height: 56,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
     fontSize: 24,
-    textAlign: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  submitButton: {
-    backgroundColor: Colors.light.tint,
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
+    backgroundColor: '#F9FAFB',
+    color: '#374151',
+  },
+  errorContainer: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   errorText: {
-    color: Colors.danger,
+    color: '#DC2626',
     fontSize: 14,
-    marginTop: 8,
+    textAlign: 'center',
   },
-  successText: {
-    color: '#4CAF50',
-    fontSize: 14,
-    marginTop: 8,
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  submitButton: {
+    backgroundColor: '#5B8DEF',
+    paddingVertical: 16,
+    borderRadius: 25,
+    alignItems: 'center',
+    shadowColor: '#5B8DEF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   disabledButton: {
     opacity: 0.7,

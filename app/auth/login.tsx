@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, SafeAreaView, Image, Alert, Platform, ActivityIndicator, Dimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,6 +8,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -19,6 +22,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const passwordInputRef = useRef<TextInput>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -132,203 +136,317 @@ export default function LoginScreen() {
   
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>        
-        <ThemedText style={styles.logo}>LOGO</ThemedText>
-        
+    <LinearGradient 
+      colors={['#E8EFFF', '#F0F4FF', '#FFFFFF']} 
+      style={styles.container}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          {/* Logo ve başlık bölümü */}
+          <View style={styles.logoSection}>
+            {/* Bebek logosu */}
+            <View style={styles.logoContainer}>
+              <MaterialIcons name="child-care" size={60} color="#5B8DEF" />
+            </View>
+            
+            <ThemedText style={styles.appTitle}></ThemedText>
+            <ThemedText style={styles.appSubtitle}>Bebeğinizin güvenli yuvası</ThemedText>
+          </View>
 
-        <View style={styles.form}>
-          <TextInput 
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setEmailError(null);
-            }}
-            placeholder="E-posta"
-            style={[styles.input, emailError && styles.inputError]}
-            placeholderTextColor="#999"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoCorrect={false}
-            returnKeyType="next"
-            enablesReturnKeyAutomatically
-            onSubmitEditing={() => passwordInputRef.current?.focus()}
-          />
-          {emailError && <ThemedText style={styles.error}>{emailError}</ThemedText>}
-          
-          <TextInput 
-            ref={passwordInputRef}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setPasswordError(null);
-            }}
-            placeholder="Şifre"
-            style={[styles.input, passwordError && styles.inputError]}
-            secureTextEntry
-            placeholderTextColor="#999"
-            returnKeyType="done"
-            enablesReturnKeyAutomatically
-            onSubmitEditing={handleLogin}
-          />
-          {passwordError && <ThemedText style={styles.error}>{passwordError}</ThemedText>}
+          {/* Form bölümü */}
+          <View style={styles.formSection}>
+            {/* E-posta input */}
+            <View style={styles.inputContainer}>
+              <TextInput 
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setEmailError(null);
+                }}
+                placeholder="E-posta"
+                style={[styles.input, emailError && styles.inputError]}
+                placeholderTextColor="#B8B8B8"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
+              />
+            </View>
+            {emailError && <ThemedText style={styles.error}>{emailError}</ThemedText>}
+            
+            {/* Şifre input */}
+            <View style={styles.inputContainer}>
+              <TextInput 
+                ref={passwordInputRef}
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setPasswordError(null);
+                }}
+                placeholder="Parola"
+                style={[styles.input, passwordError && styles.inputError]}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#B8B8B8"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+              <TouchableOpacity 
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <MaterialIcons 
+                  name={showPassword ? "visibility" : "visibility-off"} 
+                  size={24} 
+                  color="#B8B8B8" 
+                />
+              </TouchableOpacity>
+            </View>
+            {passwordError && <ThemedText style={styles.error}>{passwordError}</ThemedText>}
 
-          {error && (
-            <ThemedText style={styles.error}>{error}</ThemedText>
-          )}
+            {error && (
+              <ThemedText style={styles.error}>{error}</ThemedText>
+            )}
 
-          {successMessage && (
-          <ThemedText style={styles.successMessage}>{successMessage}</ThemedText>
-          )}
-        
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Link href="/auth/resetPassword">
-              <ThemedText style={styles.forgotText}>Şifremi Unuttum</ThemedText>
-            </Link>
+            {successMessage && (
+              <ThemedText style={styles.successMessage}>{successMessage}</ThemedText>
+            )}
+            
+            {/* Şifremi unuttum */}
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Link href="/auth/resetPassword">
+                <ThemedText style={styles.forgotText}>Şifreni mi unuttun?</ThemedText>
+              </Link>
+            </TouchableOpacity>
+          </View>
+
+          {/* Giriş butonu */}
+          <TouchableOpacity 
+            style={styles.loginButton} 
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
+            )}
           </TouchableOpacity>
 
+          {/* Veya divider */}
+          <View style={styles.divider}>
+            <ThemedText style={styles.dividerText}>veya</ThemedText>
+          </View>
+
+          {/* Google ile giriş butonu */}
+          <TouchableOpacity 
+            style={styles.googleButton}
+            onPress={() => promptAsync()}
+            disabled={!request || isLoading}
+          >
+            <AntDesign name="google" size={20} color="#DB4437" />
+            <ThemedText style={styles.googleButtonText}>Google ile giriş yap</ThemedText>
+          </TouchableOpacity>
+
+          {/* Alt footer */}
+          <View style={styles.footer}>
+            <ThemedText style={styles.footerText}>Hesabın yok mu? </ThemedText>
+            <Link href="/auth/register">
+              <ThemedText style={styles.link}>Kaydol</ThemedText>
+            </Link>
+          </View>
+
+          {/* Privacy links */}
+          <View style={styles.privacyLinks}>
+            <Link href="/legal/agreement">
+              <ThemedText style={styles.privacyText}>Gizlilik Politikası</ThemedText>
+            </Link>
+            <ThemedText style={styles.privacyDot}> • </ThemedText>
+            <Link href="/legal/kvkk">
+              <ThemedText style={styles.privacyText}>Kullanım Koşulları</ThemedText>
+            </Link>
+          </View>
         </View>
-
-        <TouchableOpacity 
-          style={styles.loginButton} 
-          onPress={() => {
-            handleLogin();
-          }}
-          
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.divider}>
-          <View style={styles.line} />
-          <ThemedText style={styles.dividerText}>veya</ThemedText>
-          <View style={styles.line} />
-        </View>
-
-        <TouchableOpacity 
-          style={styles.googleButton}
-          onPress={() => promptAsync()}
-          disabled={!request}
-        >
-          <Image 
-            source={require('@/assets/images/google-icon.png')} 
-            style={styles.googleIcon} 
-          />
-          <ThemedText>Google ile devam et</ThemedText>
-        </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <ThemedText>Hesabınız yok mu? </ThemedText>
-          <Link href="/auth/register">
-            <ThemedText style={styles.link}>Kayıt Ol</ThemedText>
-          </Link>
-        </View>
-      </ThemedView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+  },
+  safeArea: {
+    flex: 1,
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 32,
     justifyContent: 'center',
   },
-  logo: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#4285F4',
-    textAlign: 'center',
-    marginBottom: 48,
-    paddingTop: 50,
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 60,
   },
-  form: {
-    gap: 16,
+  logoContainer: {
+    width: 100,
+    height: 100,
+    backgroundColor: 'rgba(91, 141, 239, 0.15)',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  appTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#2D3748',
+    marginBottom: 8,
+  },
+  appSubtitle: {
+    fontSize: 16,
+    color: '#718096',
+    textAlign: 'center',
+  },
+  formSection: {
+    marginBottom: 32,
+  },
+  inputContainer: {
+    position: 'relative',
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: '#F5F5F5',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 16,
     fontSize: 16,
+    color: '#2D3748',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
   },
   inputError: {
-    borderColor: '#FF3B30',
-    borderWidth: 1,
+    borderColor: '#E53E3E',
+    borderWidth: 2,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 16,
+    top: 18,
+    padding: 4,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignItems: 'center',
+    marginTop: 8,
   },
   forgotText: {
-    color: '#4285F4',
-    fontSize: 14,
+    color: '#5B8DEF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   loginButton: {
-    backgroundColor: '#4285F4',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 24,
+    backgroundColor: '#5B8DEF',
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginBottom: 24,
+    shadowColor: '#5B8DEF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonText: {
-    color: 'white',
+    color: '#FFFFFF',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   divider: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E5E5',
+    marginBottom: 24,
   },
   dividerText: {
-    marginHorizontal: 16,
-    color: '#666',
+    color: '#A0AEC0',
+    fontSize: 16,
   },
   googleButton: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    alignItems: 'center',
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
   },
-  googleIcon: {
-    width: 24,
-    height: 24,
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginLeft: 12,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  footerText: {
+    color: '#718096',
+    fontSize: 16,
   },
   link: {
-    color: '#4285F4',
+    color: '#5B8DEF',
+    fontSize: 16,
     fontWeight: '600',
   },
+  privacyLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  privacyText: {
+    color: '#A0AEC0',
+    fontSize: 14,
+  },
+  privacyDot: {
+    color: '#A0AEC0',
+    fontSize: 14,
+  },
   error: {
-    color: '#FF3B30',
-    fontSize: 12,
-    marginTop: -10,
+    color: '#E53E3E',
+    fontSize: 14,
+    marginTop: -12,
+    marginBottom: 8,
     marginLeft: 4,
   },
   successMessage: {
-    color: 'green',
+    color: '#38A169',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     fontSize: 16,
+    fontWeight: '500',
   },
 }); 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Image, RefreshControl, SafeAreaView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
@@ -55,210 +55,246 @@ export default function BabiesScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <LinearGradient
-          colors={[Colors[colorScheme ?? 'light'].tint, '#4A90E2']}
-          style={styles.headerGradient}
-        >
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <MaterialIcons name="child-care" size={48} color="#FFF" />
-            </View>
-            <ThemedText style={styles.headerTitle}>Bebeklerim</ThemedText>
-            <ThemedText style={styles.headerSubtitle}>
-              Bebeklerinizin gelişimini takip edin
-            </ThemedText>
-          </View>
-        </LinearGradient>
-
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
-          {babies.length === 0 ? (
-            <View style={styles.emptyState}>
-              <MaterialIcons name="child-care" size={64} color="#666" />
-              <ThemedText style={styles.emptyStateText}>
-                Henüz bebek eklemediniz
-              </ThemedText>
-            </View>
-          ) : (
-            <View style={styles.babiesList}>
-              {babies.map((baby) => (
-                <TouchableOpacity
-                  key={baby.id}
-                  style={styles.babyCard}
-                  onPress={() => router.push(`/baby/detail/${baby.id}`)}
-                >
-                  <View style={[
-                    styles.babyAvatar,
-                    { backgroundColor: baby.gender === 'female' ? 'rgba(255, 182, 193, 0.1)' : 'rgba(135, 206, 235, 0.1)' }
-                  ]}>
-                    {baby.photo?.url ? (
-                      <Image source={{ uri: baby.photo.url }} style={styles.babyPhoto} />
-                    ) : (
-                      <MaterialIcons 
-                        name="child-care" 
-                        size={32} 
-                        color={baby.gender === 'female' ? '#FF69B4' : '#4A90E2'} 
-                      />
-                    )}
-                  </View>
-                  <View style={styles.babyInfo}>
-                    <ThemedText style={styles.babyName}>{baby.name}</ThemedText>
-                    <ThemedText style={styles.babyDate}>
-                      {new Date(baby.birthDate).toLocaleDateString('tr-TR')}
-                    </ThemedText>
-                  </View>
-                  <MaterialIcons name="chevron-right" size={24} color="#666" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+          {/* Header */}
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={styles.scrollContent}
+          >
+            {babies.length === 0 ? (
+              <View style={styles.emptyState}>
+                <ThemedText style={styles.emptyStateTitle}>
+                  Henüz bebek eklemediniz
+                </ThemedText>
+                <ThemedText style={styles.emptyStateSubtitle}>
+                  İlk bebeğinizi ekleyerek başlayın
+                </ThemedText>
+              </View>
+            ) : (
+              <View style={styles.babiesList}>
+                {babies.map((baby) => (
+                  <TouchableOpacity
+                    key={baby.id}
+                    style={styles.babyCard}
+                    onPress={() => router.push(`/baby/detail/${baby.id}`)}
+                  >
+                    <View style={[
+                      styles.babyAvatar,
+                      { backgroundColor: baby.gender === 'female' ? '#FFE4E6' : '#DBEAFE' }
+                    ]}>
+                      {baby.photo?.url ? (
+                        <Image source={{ uri: baby.photo.url }} style={styles.babyPhoto} />
+                      ) : (
+                        <View style={styles.avatarPlaceholder}>
+                          <ThemedText style={[
+                            styles.avatarText,
+                            { color: baby.gender === 'female' ? '#F472B6' : '#60A5FA' }
+                          ]}>
+                            {baby.name.charAt(0).toUpperCase()}
+                          </ThemedText>
+                        </View>
+                      )}
+                    </View>
+                    <View style={styles.babyInfo}>
+                      <ThemedText style={styles.babyName}>{baby.name}</ThemedText>
+                      <ThemedText style={styles.babyDate}>
+                        {new Date(baby.birthDate).toLocaleDateString('tr-TR')}
+                      </ThemedText>
+                      <View style={styles.genderBadge}>
+                        <ThemedText style={styles.genderText}>
+                          {baby.gender === 'female' ? 'Kız' : 'Erkek'}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <MaterialIcons name="chevron-right" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </ScrollView>
 
-      <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => router.push('/baby/gender-select')}
-        >
-          <MaterialIcons name="add" size={24} color="#FFF" />
-          <ThemedText style={styles.addButtonText}>Bebek Ekle</ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+          {/* Add Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => router.push('/baby/gender-select')}
+            >
+              <ThemedText style={styles.addButtonText}>Bebek Ekle</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  backButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  placeholder: {
+    width: 40,
   },
   scrollView: {
     flex: 1,
   },
-  headerGradient: {
-    paddingVertical: 32,
-  },
-  header: {
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#FFF',
-    opacity: 0.9,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 80,
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
   },
   emptyState: {
     alignItems: 'center',
-    padding: 32,
-    backgroundColor: Colors.light.cardBackground,
+    backgroundColor: '#FFF',
     borderRadius: 16,
-    marginTop: -32,
-    shadowColor: "#000",
+    padding: 40,
+    marginTop: 20,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  emptyStateText: {
-    marginTop: 16,
-    marginBottom: 24,
-    color: '#666',
-    fontSize: 16,
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.light.tint,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '500',
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
   },
   babiesList: {
-    marginTop: -32,
-    gap: 12,
+    gap: 16,
   },
   babyCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
     padding: 16,
-    backgroundColor: Colors.light.cardBackground,
-    borderRadius: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 2,
+    elevation: 2,
   },
   babyAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   babyPhoto: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  avatarPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: '600',
   },
   babyInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
   },
   babyName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#374151',
     marginBottom: 4,
   },
   babyDate: {
     fontSize: 14,
-    color: '#666',
+    color: '#9CA3AF',
+    marginBottom: 6,
   },
-  bottomButtonContainer: {
+  genderBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  genderText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  buttonContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  addButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#5B8DEF',
+    paddingVertical: 16,
+    borderRadius: 25,
+    shadowColor: '#5B8DEF',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 
